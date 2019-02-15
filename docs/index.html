@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Oskar Wickström">
+  <title>Writing a Screencast Video Editor in Haskell</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="reveal.js/css/reveal.css">
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="reveal.js/css/theme/owickstrom.css" id="theme">
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match( /print-pdf/gi ) ? 'reveal.js/css/print/pdf.css' : 'reveal.js/css/print/paper.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script>
+  <!--[if lt IE 9]>
+  <script src="reveal.js/lib/js/html5shiv.js"></script>
+  <![endif]-->
+  <link rel="stylesheet" href="highlight.js/styles/idea.css">
+  <script src="highlight.js/highlight.pack.js"></script>
+  <script>
+    hljs.initHighlightingOnLoad();
+  </script>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide">
+  <h1 class="title">Writing a Screencast Video Editor in Haskell</h1>
+  <p class="author">Oskar Wickström</p>
+  <p class="date">October 2018</p>
+</section>
+
+<section id="about-me" class="slide level2">
+<h2>About Me</h2>
+<ul>
+<li>Live in Malmö, Sweden</li>
+<li>Work for <a href="https://symbiont.io/">Symbiont</a></li>
+<li>Blog at <a href="https://wickstrom.tech">wickstrom.tech</a></li>
+<li>Maintain some open source projects</li>
+<li><a href="https://haskell-at-work.com">Haskell at Work</a> screencasts</li>
+<li>Spent the last six months writing a screencast video editor</li>
+</ul>
+</section>
+<section><section id="background" class="title-slide slide level1 align-top contain" data-background="images/evolution.png"><h1>Background</h1></section><section id="haskell-at-work" class="slide level2">
+<h2>Haskell at Work</h2>
+<ul>
+<li>“Haskell at Work” screencasts
+<ul>
+<li>Centered around code editor</li>
+<li>Fast-paced</li>
+<li>No webcam overlay or effects</li>
+</ul></li>
+<li>My workflow
+<ul>
+<li>Write a detailed script</li>
+<li>Record video separately</li>
+<li>Record audio separately</li>
+<li>Cut and join all “scenes”</li>
+</ul></li>
+</ul>
+</section><section id="video-editors" class="slide level2">
+<h2>Video Editors</h2>
+<ul>
+<li>Free video editors (Kdenlive, OpenShot, …)
+<ul>
+<li>No good normalization and audio gate effects</li>
+<li>Unsuited for my workflow</li>
+<li>Written in C++</li>
+</ul></li>
+<li>Commerical video editors (Premiere Pro, Final Cut Pro, …)
+<ul>
+<li>Proprietary</li>
+<li>Expensive</li>
+<li>Unsuited for my workflow</li>
+</ul></li>
+</ul>
+<aside class="notes">
+<ul>
+<li>I first tried free video editors …</li>
+<li>Then I tried proprietary video editors …</li>
+<li>So, I started “The Great Yak Shave”</li>
+</ul>
+</aside>
+</section></section>
+<section><section id="the-great-yak-shave" class="title-slide slide level1 dark align-bottom" data-background="images/yak.jpg"><h1>The Great Yak Shave</h1></section><section id="building-a-video-editor" class="slide level2">
+<h2>Building a Video Editor</h2>
+<ul>
+<li>I decided to build a screencast video editor
+<ul>
+<li>Tailored to my workflow</li>
+<li>Minimal, do one thing well</li>
+</ul></li>
+<li>I decided write it in Haskell
+<ul>
+<li>Didn’t want to write an Electron app</li>
+<li>Settled on GTK+</li>
+</ul></li>
+<li>Dog-fooding some of my own libraries</li>
+</ul>
+</section></section>
+<section><section id="komposition" class="title-slide slide level1 dark" data-background="#00008B"><h1>Komposition</h1></section><section id="komposition-overview" class="slide level2">
+<h2>Komposition Overview</h2>
+<table>
+<tr>
+<td>
+<ul>
+<li>Cross-platform GUI application</li>
+<li>Modal</li>
+<li>Hierarchical timeline
+<ul>
+<li>Sequences</li>
+<li>Parallels</li>
+<li>Clips and gaps</li>
+</ul></li>
+<li>Automatic scene classification</li>
+<li>Automatic sentence classification</li>
+<li>Keyboard-driven editing workflow
+</td>
+<td width="50%">
+<img data-src="images/komposition.png" alt="Komposition" />
+</td>
+</tr>
+</table></li>
+</ul>
+</section><section id="documentation" class="slide level2">
+<h2>Documentation</h2>
+<ul>
+<li><a href="https://owickstrom.github.io/komposition/" class="uri">https://owickstrom.github.io/komposition/</a>
+<ul>
+<li>User guide</li>
+<li>Tutorial screencast</li>
+</ul></li>
+</ul>
+<p><img data-src="images/documentation.png" alt="Komposition documentation" style="width:60.0%" /></p>
+</section><section id="keyboard-driven-editing" class="slide level2">
+<h2>Keyboard-Driven Editing</h2>
+<table>
+<tr>
+<td>
+<ul>
+<li>Vim-like bindings</li>
+<li>Corresponding menu items</li>
+<li>Some mouse support</li>
+<li>Help dialog showing current mode’s key bindings
+</td>
+<td width="50%">
+<img data-src="images/keybindings.png" alt="Komposition" />
+</td>
+</tr>
+</table></li>
+</ul>
+</section></section>
+<section><section id="hierarchical-timeline" class="title-slide slide level1" data-background="#dddddd"><h1>Hierarchical Timeline</h1></section><section id="clips" class="slide level2">
+<h2>Clips</h2>
+<p><img data-src="images/timeline1.svg" alt="Clips" style="width:80.0%" /></p>
+<aside class="notes">
+Clips are put in video and audio tracks within parallels
+</aside>
+</section><section id="video-still-frames" class="slide level2">
+<h2>Video Still Frames</h2>
+<p><img data-src="images/timeline2.svg" alt="Video Still Frames" style="width:80.0%" /></p>
+<aside class="notes">
+If the video track is shorter, it will be padded with still frames
+</aside>
+</section><section id="adding-gaps" class="slide level2">
+<h2>Adding Gaps</h2>
+<p><img data-src="images/timeline3.svg" alt="Adding Gaps" style="width:100.0%" /></p>
+<aside class="notes">
+<ul>
+<li>You can add explicit gaps in video and audio tracks</li>
+<li>These are also filled with still frames for video</li>
+</ul>
+</aside>
+</section><section id="sequences" class="slide level2">
+<h2>Sequences</h2>
+<p><img data-src="images/timeline4.svg" alt="Sequences" style="width:100.0%" /></p>
+<aside class="notes">
+<ul>
+<li>Parallels are put in sequences</li>
+<li>Each parallel is played until its end, then the next, and so on</li>
+<li>Multiple parallels can be used to synchronize clips</li>
+</ul>
+</aside>
+</section><section id="timeline" class="slide level2">
+<h2>Timeline</h2>
+<p><img data-src="images/timeline5.svg" alt="Timeline" style="width:100.0%" /></p>
+<aside class="notes">
+<ul>
+<li>The top level is the timeline</li>
+<li>The timeline contain sequences</li>
+<li>It’s useful for organizing the parts of your screencast</li>
+</ul>
+</aside>
+</section></section>
+<section><section id="demo" class="title-slide slide level1 dark" data-background="#000000" data-background-video="images/demo.gif" data-background-video-loop="true"><h1>Demo</h1></section></section>
+<section><section id="implementation" class="title-slide slide level1 dark" data-background="images/cogs.jpg"><h1>Implementation</h1></section><section id="striving-for-purely-functional" class="slide level2">
+<h2>Striving for Purely Functional</h2>
+<ul>
+<li>Pure functions and data structures in core domain
+<ul>
+<li>Timeline</li>
+<li>Focus</li>
+<li>Commands</li>
+<li>Event handling</li>
+<li>Key bindings</li>
+<li>Parts of video classification</li>
+</ul></li>
+<li>Impure parts:
+<ul>
+<li>Audio and video import</li>
+<li>Sentence classification</li>
+<li>Preview frame rendering</li>
+<li>Main application control flow</li>
+</ul></li>
+</ul>
+<aside class="notes">
+<ul>
+<li>I’m striving to keep the core domain code pure</li>
+<li>“Functional core, imperative shell”, Gary Bernhardt</li>
+<li>This includes: …</li>
+<li>There are still impure parts, like: …</li>
+</ul>
+</aside>
+</section><section id="gtk" class="slide level2">
+<h2>GTK+</h2>
+<ul>
+<li>Haskell bindings from <code>gi-gtk</code></li>
+<li>Regular GTK+ was too painful
+<ul>
+<li>Imperative</li>
+<li>Callback-oriented</li>
+<li>Everything in IO, no explicit model</li>
+</ul></li>
+<li>Started <code>gi-gtk-declarative</code>
+<ul>
+<li>Declarative using data structures</li>
+<li>VDOM-like diffing</li>
+<li>Event handling based on pure functions and values</li>
+<li>Custom widgets</li>
+</ul></li>
+<li>Imperative <code>gi-gtk</code> where needed</li>
+</ul>
+</section><section id="type-indexed-state-machines" class="slide level2">
+<h2>Type-Indexed State Machines</h2>
+<ul>
+<li><p>Using <code>motor</code> and <code>row-types</code> for typed state machines:</p>
+<pre class="haskell"><code>start
+  :: Name n
+  -&gt; KeyMaps
+  -&gt; Actions m &#39;[ n !+ State m WelcomeScreenMode] r ()</code></pre>
+<pre class="haskell"><code>returnToTimeline
+  :: ReturnsToTimeline mode
+  =&gt; Name n
+  -&gt; TimelineModel
+  -&gt; Actions m &#39;[ n := State m mode !--&gt; State m TimelineMode] r ()</code></pre></li>
+<li>Most complicated aspect of the codebase</li>
+<li><p>Currently being rewritten</p></li>
+</ul>
+<aside class="notes">
+<ul>
+<li>I’m using a library I’ve been working on called “Motor” …</li>
+<li>The most complicated aspect of the Komposition codebade</li>
+<li>Not sure if it’s worth the complexity
+<ul>
+<li>But in combination with GADTs for state-specific events and commands …</li>
+</ul></li>
+</ul>
+</aside>
+</section><section id="singleton-pattern" class="slide level2">
+<h2>Singleton Pattern</h2>
+<pre class="haskell"><code>data Mode
+  = WelcomeScreenMode
+  | TimelineMode
+  | LibraryMode
+  | ImportMode
+
+data SMode m where
+  SWelcomeScreenMode :: SMode WelcomeScreenMode
+  STimelineMode      :: SMode TimelineMode
+  SLibraryMode       :: SMode LibraryMode
+  SImportMode        :: SMode ImportMode</code></pre>
+</section><section id="using-singletons" class="slide level2">
+<h2>Using Singletons</h2>
+<pre class="haskell"><code>data Command (mode :: Mode) where
+  Cancel       :: Command mode
+  Help         :: Command mode
+  FocusCommand :: FocusCommand -&gt; Command TimelineMode
+  JumpFocus    :: Focus SequenceFocusType -&gt; Command TimelineMode
+  -- ...
+
+keymaps :: SMode m -&gt; KeyMap (Command m)
+keymaps =
+  \case
+    SWelcomeScreenMode -&gt;
+      [ ([KeyChar &#39;q&#39;], Mapping Cancel)
+      , ([KeyEscape], Mapping Cancel)
+      , ([KeyChar &#39;?&#39;], Mapping Help)
+      ]
+    -- ...</code></pre>
+</section><section id="automatic-scene-classification" class="slide level2">
+<h2>Automatic Scene Classification</h2>
+<ul>
+<li><p>Creates a producer of frames</p>
+<pre class="haskell"><code>readVideoFile :: MonadIO m =&gt; FilePath -&gt; Producer (Timed Frame) m ()</code></pre></li>
+<li><p>Custom algorithm for classification</p>
+<pre class="haskell"><code>classifyMovement
+    :: Monad m
+    =&gt; Time -- ^ Minimum segment duration
+    -&gt; Producer (Timed RGB8Frame) m ()
+    -&gt; Producer (Classified (Timed RGB8Frame)) m ()
+
+classifyMovingScenes ::
+     Monad m
+  =&gt; Duration -- ^ Full length of video
+  -&gt; Producer (Classified (Timed RGB8Frame)) m ()
+  -&gt; Producer ProgressUpdate m [TimeSpan]</code></pre></li>
+</ul>
+</section><section id="automatic-sentence-classification" class="slide level2">
+<h2>Automatic Sentence Classification</h2>
+<ul>
+<li>Currently using <code>sox</code>
+<ul>
+<li>Normalization</li>
+<li>Noise gate</li>
+<li>Auto-splitting by silence</li>
+</ul></li>
+<li>Creates segment audio files on disk (can’t extract timespans)</li>
+</ul>
+</section><section id="rendering" class="slide level2">
+<h2>Rendering</h2>
+<ul>
+<li>Flattening timeline
+<ul>
+<li>Conversion from hierarchical timeline to a flat representation</li>
+<li>Pads gaps and empty parts with still frames</li>
+</ul></li>
+<li>Flat representation is converted to a FFmpeg command
+<ul>
+<li>Data types for FFmpeg CLI syntax</li>
+<li>Common flags</li>
+<li>Filter graph</li>
+</ul></li>
+</ul>
+</section><section id="preview" class="slide level2">
+<h2>Preview</h2>
+<ul>
+<li>Proxy media for performance</li>
+<li>Same FFmpeg backend as when rendering
+<ul>
+<li>Output is a streaming HTTP server</li>
+<li>Not ideal, would like to use a named pipe or domain socket</li>
+</ul></li>
+<li>GStreamer widget
+<ul>
+<li>Consumes the HTTP stream</li>
+<li>Embedded in the GTK+ user interface</li>
+</ul></li>
+<li>Unreliable</li>
+<li>Currently doesn’t work on individual clips and gaps</li>
+</ul>
+</section></section>
+<section><section id="testing" class="title-slide slide level1 dark" data-background="images/testing.jpg"><h1>Testing</h1></section><section id="color-tinting-video-classifier" class="slide level2">
+<h2>Color-Tinting Video Classifier</h2>
+<ul>
+<li>Tints the original video with red/green based on classification</li>
+<li>Easier to test classifier on real recordings</li>
+</ul>
+<p><img data-src="images/color-tinting.gif" alt="Komposition" /></p>
+</section><section id="property-based-testing" class="slide level2">
+<h2>Property-Based Testing</h2>
+<ul>
+<li>Timeline commands and movement
+<ul>
+<li>Generates sequences of commands</li>
+<li>Applies all commands</li>
+<li>Resulting focus should always be valid</li>
+</ul></li>
+<li>Video scene classification
+<ul>
+<li>Generates known test scenes</li>
+<li>Translates to real frame data</li>
+<li>Runs classifier, compares to known test scenes</li>
+</ul></li>
+<li>Flattening of hierchical timeline</li>
+<li>Roundtrip properties of FFmpeg format printers and parsers</li>
+</ul>
+</section><section id="example-based-testing" class="slide level2">
+<h2>Example-Based Testing</h2>
+<ul>
+<li>Commands</li>
+<li>Navigation</li>
+<li>FFmpeg syntax printing</li>
+</ul>
+</section></section>
+<section><section id="used-packages" class="title-slide slide level1"><h1>Used Packages</h1></section><section id="haskell-gi" class="slide level2">
+<h2>haskell-gi</h2>
+<ul>
+<li>Bindings for GTK+, GStreamer, and more
+<ul>
+<li>gi-gobject</li>
+<li>gi-glib</li>
+<li>gi-gst</li>
+<li>gi-gtk</li>
+<li>gi-gdk</li>
+<li>gi-gdkpixbuf</li>
+<li>gi-pango</li>
+</ul></li>
+<li>Extended with gi-gtk-declarative</li>
+</ul>
+</section><section id="massiv-massiv-io" class="slide level2">
+<h2>massiv &amp; massiv-io</h2>
+<ul>
+<li>Used in video classifier</li>
+<li>Parallel comparison of pixel arrays</li>
+<li>No-copy conversion from JuicyPixels frames to massiv arrays</li>
+<li>Lower-resolution proxy media helps with performance</li>
+</ul>
+</section><section id="pipes" class="slide level2">
+<h2>Pipes</h2>
+<ul>
+<li>Streaming frame reader and writer around <code>ffmpeg-light</code></li>
+<li><p>IO operations with streaming progress notifications</p>
+<pre class="haskell"><code>importVideoFileAutoSplit
+  :: (MonadIO m, MonadSafe m)
+  =&gt; VideoSettings
+  -&gt; FilePath
+  -&gt; FilePath
+  -&gt; Producer ProgressUpdate m [VideoAsset]</code></pre></li>
+<li><code>pipes-safe</code> for handling resources</li>
+<li><p><code>pipes-parse</code> for <code>StateT</code>-based transformations</p></li>
+</ul>
+</section><section id="others" class="slide level2">
+<h2>Others</h2>
+<ul>
+<li>protolude</li>
+<li>lens</li>
+<li>typed-process</li>
+</ul>
+</section></section>
+<section><section id="summary" class="title-slide slide level1"><h1>Summary</h1></section><section id="retrospective" class="slide level2">
+<h2>Retrospective</h2>
+<ul>
+<li>The best parts
+<ul>
+<li>Building a useful tool</li>
+<li>Haskell and GHC</li>
+<li>Keeping core domain pure</li>
+<li>Testing with Hedgehog</li>
+</ul></li>
+<li>The problematic parts
+<ul>
+<li>Video and audio codecs, containers, streaming</li>
+<li>Executing external programs</li>
+<li>GTK+ in Haskell</li>
+<li>Dependency managment (non-Haskell dependencies)</li>
+</ul></li>
+</ul>
+</section><section id="next-steps" class="slide level2">
+<h2>Next Steps</h2>
+<ul>
+<li>Features
+<ul>
+<li>More commands (yank, paste, join, …)</li>
+<li>Preview any timeline part</li>
+<li>Adjust clips</li>
+</ul></li>
+<li>Improvements
+<ul>
+<li>Technical debt, refactoring</li>
+<li>Content-addressed project files (reuse, avoiding collision)</li>
+<li>Optimized FFmpeg rendering</li>
+<li>Optimized diffing (gi-gtk-declarative)</li>
+</ul></li>
+<li>Packaging (Debian, macOS, Windows, nixpkgs)</li>
+<li>… and much more</li>
+</ul>
+</section><section id="thank-you" class="slide level2">
+<h2>Thank You!</h2>
+<ul>
+<li>Komposition: <a href="https://owickstrom.github.io/komposition/">owickstrom.github.io/komposition/</a></li>
+<li>Slides: <a href="https://owickstrom.github.io/writing-a-screencast-video-editor-in-haskell/">owickstrom.github.io/writing-a-screencast-video-editor-in-haskell/</a></li>
+<li>Image credits:
+<ul>
+<li><a href="https://commons.wikimedia.org/w/index.php?curid=22106967">Yak by travelwayoflife - Flickr, CC BY-SA 2.0</a></li>
+<li><a href="https://commons.wikimedia.org/w/index.php?curid=2165296">Human evolution scheme by M. Garde - Self work (Original by: José-Manuel Benitos), CC BY-SA 3.0</a></li>
+<li><a href="https://commons.wikimedia.org/wiki/File:Old_Cogs_(5084228263).jpg">Old Cogs by Emmanuel Huybrechts from Laval, Canada (Old Cogs) CC BY 2.0, via Wikimedia Commons</a></li>
+<li><a href="https://www.reddit.com/r/BetterEveryLoop/comments/6gsbs3/save_the_skateboard/">Save the skateboard!</a></li>
+</ul></li>
+<li>Thanks to <a href="https://twitter.com/sassela">@sassela</a> for great feedback!</li>
+</ul>
+</section></section>
+    </div>
+  </div>
+
+  <script src="reveal.js/lib/js/head.min.js"></script>
+  <script src="reveal.js/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Display controls in the bottom right corner
+        controls: true,
+        // Push each slide change to the browser history
+        history: true,
+        // Transition style
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'fast', // default/fast/slow
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true },
+          { src: 'reveal.js/plugin/notes/notes.js', async: true }
+        ]
+      });
+    </script>
+    </body>
+</html>
