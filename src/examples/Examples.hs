@@ -34,7 +34,7 @@ reverse :: [a] -> [a]
 reverse = id
 
 mySuperSort :: Ord a => [a] -> [a]
-mySuperSort = id
+mySuperSort = sort
 
 industryStandardSort :: Ord a => [a] -> [a]
 industryStandardSort = sort

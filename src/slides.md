@@ -74,9 +74,51 @@ classoption: dvipsnames
 
 How many of you write sort algorithms in your day job?
 
-## How do I test X?
+## How do I use this in my job?
 
-* ...
+* What if you're working with:
+  * Backends with databases and integrations?
+  * Frontends with GUIs and user input?
+  * Data pipelines and analytics?
+* Hard to write properties
+* Fewer examples
+
+# Property-Based Testing for the Busy Programmer{.dark background=images/dog.jpg}
+
+## Testing the "Ugly" Parts
+
+* Not everything will be small pure functions
+* Complex interactions between larger modules
+* Non-determinism
+  - Statefulness
+  - Side-effects
+
+## Designing for Testability
+
+* Regular "writing testable code" guidelines apply:
+  - Single responsibility
+  - Determinism (not necessarily pure!)
+* Rich data types
+* Low coupling between interface and implementation
+
+## State-Machine Testing
+
+...
+
+# Case Studies from Komposition
+
+## Komposition
+
+...
+
+## Case Studies
+
+1. ...
+2. ...
+3. ...
+
+# 1. Video Scene Classification
+
 
 ## References
 
