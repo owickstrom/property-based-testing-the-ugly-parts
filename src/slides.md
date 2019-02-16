@@ -105,7 +105,7 @@ How many of you write sort algorithms in your day job?
 
 ...
 
-# Case Studies from Komposition
+# Case Studies from Komposition{.dark background=images/komposition-bg.png}
 
 ## Komposition
 
@@ -113,12 +113,19 @@ How many of you write sort algorithms in your day job?
 
 ## Case Studies
 
-1. ...
-2. ...
-3. ...
+1. Video Scene Classification
+2. Focus and Timeline Consistency
+3. Undo/Redo Symmetricity
 
 # 1. Video Scene Classification
 
+# 2. Focus and Timeline Consistency
+
+# 3. Undo/Redo Symmetricity
+
+# Summary
+
+## Summary
 
 ## References
 
@@ -140,4 +147,4 @@ https://fsharpforfunandprofit.com/posts/property-based-testing-2/
 - Slides: [owickstrom.github.io/property-based-testing-the-ugly-parts/](https://owickstrom.github.io/property-based-testing-the-ugly-parts/)
 - Image credits:
   - ...
-- Thanks to [\@sassela](https://twitter.com/sassela) for great feedback!
+- Thanks to [\@rjmh](https://twitter.com/rjmh) for great feedback!
