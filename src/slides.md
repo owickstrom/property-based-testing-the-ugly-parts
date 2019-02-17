@@ -109,19 +109,129 @@ How many of you write sort algorithms in your day job?
 
 ## Komposition
 
-...
+
+<table>
+  <tr>
+    <td>
+- Cross-platform GUI application
+- Modal
+- Hierarchical timeline
+    - Sequences
+    - Parallels
+    - Tracks
+    - Clips and gaps
+- Automatic scene classification
+- Automatic sentence classification
+- Keyboard-driven editing workflow
+    </td>
+    <td width="50%">
+![Komposition](images/komposition-light.png)
+    </td>
+  </tr>
+</table>
+
+## Complex Features
+
+* Most complex features in Komposition
+  - Focus and timeline transformations
+  - Video classification
+  - Rendering
+  - Application logic
+* Spend effort on testing those
 
 ## Case Studies
 
-1. Video Scene Classification
-2. Focus and Timeline Consistency
-3. Undo/Redo Symmetricity
+1. Timeline Flattening
+2. Video Scene Classification
+3. Focus and Timeline Consistency
+4. Undo/Redo Symmetricity
 
-# 1. Video Scene Classification
+# Hierarchical Timeline{background=#dddddd}
 
-# 2. Focus and Timeline Consistency
+## Clips
 
-# 3. Undo/Redo Symmetricity
+![Clips](images/timeline1.svg){width=80%}
+
+<aside class="notes">
+Clips are put in video and audio tracks within parallels
+</aside>
+
+## Video Still Frames
+
+![Video Still Frames](images/timeline2.svg){width=80%}
+
+<aside class="notes">
+If the video track is shorter, it will be padded with still frames
+</aside>
+
+## Adding Gaps
+
+![Adding Gaps](images/timeline3.svg){width=100%}
+
+<aside class="notes">
+- You can add explicit gaps in video and audio tracks
+- These are also filled with still frames for video
+</aside>
+
+## Sequences
+
+![Sequences](images/timeline4.svg){width=100%}
+
+<aside class="notes">
+- Parallels are put in sequences
+- Each parallel is played until its end, then the next, and so on
+- Multiple parallels can be used to synchronize clips
+</aside>
+
+## Timeline
+
+![Timeline](images/timeline5.svg){width=100%}
+
+<aside class="notes">
+- The top level is the timeline
+- The timeline contain sequences
+- It's useful for organizing the parts of your screencast
+</aside>
+
+# <strong>Case Study 1:</strong> Timeline Flattening
+
+## Timeline Flattening
+
+* Timeline is hierarchical
+  - Sequences
+  - Parallels
+  - Tracks
+  - Clips and gaps
+* FFmpeg render knows only about two flat tracks
+  - Video track
+  - Audio track
+
+## Testing Duration
+
+```{.haskell emphasize=5:5-5:99}
+hprop_flat_timeline_has_same_duration_as_hierarchical =
+  property $ do
+    s <- forAll $ Gen.timeline (Range.exponential 0 20) Gen.parallelWithClips
+    let Just flat = Render.flattenTimeline s
+    durationOf AdjustedDuration s === durationOf AdjustedDuration flat
+````
+
+## Testing Clip Occurence
+
+```{.haskell emphasize=5:5-5:99,6:5-6:99}
+hprop_flat_timeline_has_same_clips_as_hierarchical =
+  property $ do
+    s <- forAll $ Gen.timeline (Range.exponential 0 20) Gen.parallelWithClips
+    let Just flat = Render.flattenTimeline s
+    timelineVideoClips s === flatVideoClips flat
+    timelineAudioClips s === flatAudioClips flat
+```
+
+# <strong>Case Study 2:</strong> Video Scene Classification
+
+# <strong>Case Study 3:</strong> Focus and Timeline Consistency
+
+# <strong>Case Study 4:</strong> Undo/Redo Symmetricity
 
 # Summary
 

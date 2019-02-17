@@ -314,6 +314,11 @@ p.author, p.date {
   font-weight: 800;
 }
 
+.reveal h1 strong {
+    display: block;
+    color: #0000ff;
+}
+
 
 .reveal .slides section.align-top {
   top: 0 !important;
