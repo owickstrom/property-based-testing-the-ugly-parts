@@ -256,6 +256,22 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 
 # <strong>Case Study 2:</strong> Video Scene Classification
 
+## Video Scene Classification
+
+* Komposition can automatically classify "scenes"
+  * **Moving segment:** _M_ consecutive non-equal frames
+  * **Still segment:** _S_ consecutive near-equal frames
+* _M_ and _S_ are preconfigured thresholds of moving and
+  still segment durations
+  
+## Visualizing with Color Tinting
+
+![Video classification shown with color tinting](images/color-tinting.gif)
+
+## Testing Video Classification
+
+TODO: ...
+
 # <strong>Case Study 3:</strong> Focus and Timeline Consistency
 
 # <strong>Case Study 4:</strong> Undo/Redo Symmetricity
