@@ -259,8 +259,8 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 ## Video Scene Classification
 
 * Komposition can automatically classify "scenes"
-  * **Moving segment:** _M_ consecutive non-equal frames
-  * **Still segment:** _S_ consecutive near-equal frames
+  * **Moving segment:** _M_ seconds of consecutive non-equal frames
+  * **Still segment:** _S_ seconds of consecutive near-equal frames
 * _M_ and _S_ are preconfigured thresholds of moving and
   still segment durations
   
@@ -270,7 +270,104 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 
 ## Testing Video Classification
 
-TODO: ...
+* Generate high-level representation of _expected_ output segments
+* Convert output representation to actual pixel frames
+  - Moving frames: random color pixels
+  - Still frames: all pixels with same color
+* Run the classifier on the pixel frames
+* Test properties based on:
+  - the expected output representation
+  - the actual classified output
+  
+## Two Properties of Video Classification
+
+1. Classified still segments must be at least _S_ seconds long
+   - Exception: First and last segment may be shorter
+2. Classified moving segments must have correct timespans
+   - Compared to the generated _expected_ output representation
+
+## Testing Still Segment Lengths
+
+```{.haskell}
+hprop_classifies_still_segments_of_min_length = property $ do
+
+  -- Generate test segments
+  segments <- forAll $
+    genSegments (Range.linear 1 (frameRate * 2)) resolution
+
+  -- Convert test segments to actual pixel frames
+  let pixelFrames = testSegmentsToPixelFrames segments
+  ...
+```
+
+## Testing Still Segment Lengths (cont.)
+
+```{.haskell}
+  ...
+  -- Run classifier on pixel frames
+  let counted = classifyMovement 2.0 (Pipes.each pixelFrames)
+                & Pipes.toList
+                & countSegments
+  
+  -- Sanity check: same number of frames
+  countTestSegmentFrames segments === totalClassifiedFrames counted
+
+  -- Then ignore first and last segment, and verify all other segments
+  case dropFirstAndLast counted of
+    Just middle -> traverse_ (assertStillLengthAtLeast 2.0) middle
+    Nothing     -> success
+  where
+    resolution = 20 :. 20
+```
+
+## Success!
+
+```{.text}
+> Hedgehog.check hprop_classifies_still_segments_of_min_length 
+  ✓ <interactive> passed 100 tests.
+```
+
+## Testing Moving Segment Timespans
+
+```{.haskell}
+hprop_classifies_same_scenes_as_input = property $ do
+
+  -- Generate test segments
+  segments <- forAll 
+    genSegments (Range.linear (frameRate * 1) (frameRate * 5)) resolution
+
+  -- Convert test segments to timespanned ones, and actual pixel frames
+  let segmentsWithTimespans = segments
+                              & map segmentWithDuration
+                              & segmentTimeSpans
+      pixelFrames = testSegmentsToPixelFrames segments
+      fullDuration = foldMap
+                     (durationOf AdjustedDuration . unwrapSegment)
+                     segmentsWithTimespans
+  ...
+```
+
+## Testing Moving Segment Timespans (cont.)
+
+```{.haskell}
+ ...
+  -- Run classifier on pixel frames
+  classified <-
+    (Pipes.each pixelFrames
+     & classifyMovement 2.0
+     & classifyMovingScenes fullDuration)
+    >-> Pipes.drain
+    & Pipes.runEffect
+
+  -- Check classified timespan equivalence
+  unwrapScenes segmentsWithTimespans === classified
+
+  where resolution = 20 :. 20
+```
+
+## Failure!
+
+![](images/video-classification-failure.png)
 
 # <strong>Case Study 3:</strong> Focus and Timeline Consistency
 
