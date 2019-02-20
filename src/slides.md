@@ -101,9 +101,21 @@ How many of you write sort algorithms in your day job?
 * Rich data types
 * Low coupling between interface and implementation
 
-## State-Machine Testing
+## State Machine Testing
 
 ...
+
+## Patterns for Properties
+
+- ["Choosing properties for property-based testing"](https://fsharpforfunandprofit.com/posts/property-based-testing-2/) by Scott Wlaschin
+  - "Different paths, same destination"
+  - "There and back again"
+  - "Some things never change"
+  - "The more things change, the more they stay the same"
+  - "Solve a smaller problem first"
+  - "Hard to prove, easy to verify"
+  - "The test oracle"
+
 
 # Case Studies from Komposition{.dark background=images/komposition-bg.png}
 
