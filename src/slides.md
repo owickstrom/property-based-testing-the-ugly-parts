@@ -153,7 +153,8 @@ How many of you write sort algorithms in your day job?
 ![Clips](images/timeline1.svg){width=80%}
 
 <aside class="notes">
-Clips are put in video and audio tracks within parallels
+- Clips are put in video and audio tracks within parallels
+- Tracks are played in parallel, hence the name
 </aside>
 
 ## Video Still Frames
@@ -215,9 +216,9 @@ If the video track is shorter, it will be padded with still frames
 ```{.haskell emphasize=5:5-5:99}
 hprop_flat_timeline_has_same_duration_as_hierarchical =
   property $ do
-    s <- forAll $ Gen.timeline (Range.exponential 0 20) Gen.parallelWithClips
-    let Just flat = Render.flattenTimeline s
-    durationOf AdjustedDuration s === durationOf AdjustedDuration flat
+    t <- forAll $ Gen.timeline (Range.exponential 0 20) Gen.parallelWithClips
+    let Just flat = Render.flattenTimeline t
+    durationOf AdjustedDuration t === durationOf AdjustedDuration flat
 ````
 
 ## Testing Clip Occurence
@@ -225,10 +226,10 @@ hprop_flat_timeline_has_same_duration_as_hierarchical =
 ```{.haskell emphasize=5:5-5:99,6:5-6:99}
 hprop_flat_timeline_has_same_clips_as_hierarchical =
   property $ do
-    s <- forAll $ Gen.timeline (Range.exponential 0 20) Gen.parallelWithClips
-    let Just flat = Render.flattenTimeline s
-    timelineVideoClips s === flatVideoClips flat
-    timelineAudioClips s === flatAudioClips flat
+    t <- forAll $ Gen.timeline (Range.exponential 0 20) Gen.parallelWithClips
+    let Just flat = Render.flattenTimeline t
+    timelineVideoClips t === flatVideoClips flat
+    timelineAudioClips t === flatAudioClips flat
 ```
 
 ## Further Improvements
