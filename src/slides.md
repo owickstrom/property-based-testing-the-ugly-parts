@@ -205,6 +205,10 @@ If the video track is shorter, it will be padded with still frames
 * FFmpeg render knows only about two flat tracks
   - Video track
   - Audio track
+  
+## Timeline Flattening (Graphical)
+
+![Timeline flattening](images/komposition-flattening.svg){width=100%}
 
 ## Testing Duration
 
@@ -226,6 +230,16 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
     timelineVideoClips s === flatVideoClips flat
     timelineAudioClips s === flatAudioClips flat
 ```
+
+## Further Improvements
+
+* Missing properties
+  - How are video gaps padded with still frames?
+  - Same flat result regardless of grouping (split/join sequences, then flatten)
+* Padding with frames from other parallels
+  - Frames are only picked from video clips within the parallel
+  - Should pick from _any_ video clip within the timeline
+  - Write properties to guide the refactoring
 
 # <strong>Case Study 2:</strong> Video Scene Classification
 

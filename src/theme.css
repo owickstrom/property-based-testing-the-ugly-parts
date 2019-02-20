@@ -319,6 +319,9 @@ p.author, p.date {
     color: #0000ff;
 }
 
+.reveal section img {
+  max-width: 100%;
+}
 
 .reveal .slides section.align-top {
   top: 0 !important;

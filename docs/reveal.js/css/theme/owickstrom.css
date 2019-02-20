@@ -314,6 +314,9 @@ p.author, p.date {
   font-weight: 800;
 }
 
+.reveal section img {
+  max-width: 100%;
+}
 
 .reveal .slides section.align-top {
   top: 0 !important;
