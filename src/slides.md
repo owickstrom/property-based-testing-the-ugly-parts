@@ -156,7 +156,7 @@ How many of you write sort algorithms in your day job?
 1. Timeline Flattening
 2. Video Scene Classification
 3. Focus and Timeline Consistency
-4. Undo/Redo Symmetricity
+4. Undo/Redo Symmetry
 
 # Hierarchical Timeline{background=#dddddd}
 
@@ -389,15 +389,14 @@ hprop_classifies_same_scenes_as_input = property $ do
 
 ## Testing Focus and Timeline Consistency
 
-* Run the entire application logic, including:
+* Generate a random initial state
+* Generate a random sequence user commands
+* Run all commands until termination
     - main control flow
       - entering/exiting modes
     - state
     - event handling (stubbed)
     - effects (stubbed)
-* Generate a random initial state
-* Generate a random sequence user commands
-* Run all commands until termination
 * Assert that the focus and timeline are consistent
   - Checking that "get the focused part" returns something
   
@@ -437,25 +436,89 @@ hprop_focus_never_goes_invalid = property $ do
     (endState ^. existingProject.project.timeline.UndoRedo.current)
 ```
 
-# <strong>Case Study 4:</strong> Undo/Redo Symmetricity
+# <strong>Case Study 4:</strong> Undo/Redo Symmetry
 
-# Summary
+## Undo/Redo Symmetry
+
+* Undo/Redo was previously implemented as stacks of previous/future
+  states
+* Consumed gigabytes of disk space and RAM for projects with many
+  edits
+* Rewrote the implementation to only store "invertible actions"
+
+## Testing Undo
+
+* Generate an initial state
+* Generate a sequence of undoable commands
+* Run all commands
+* Run undo command for each original command
+* Assert that we end up at the initial state
+
+## Actions are Undoable
+
+```{.haskell}
+hprop_undo_actions_are_undoable = property $ do
+  timelineAndFocus <- forAllWith showTimelineAndFocus (Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel)
+  initialState <- forAll (initializeState timelineAndFocus)
+  events <- forAll (Gen.list (Range.exponential 1 100) genUndoableTimelineEvent)
+  -- we begin by running 'events' on the original state
+  beforeUndos <- runTimelineStubbedWithExit events initialState
+  annotate (drawTree (timelineToTree (beforeUndos^.currentTimeline)))
+  -- then we run as many undo commands as undoable commands
+  afterUndos <- runTimelineStubbedWithExit (undoEvent <$ events) beforeUndos
+  -- that should result in a timeline equal to the one we at the
+  -- beginning
+  timelineToTree (initialState ^. currentTimeline) === timelineToTree (afterUndos ^. currentTimeline)
+```
+
+## Testing Redo
+
+* Generate an initial state
+* Generate a sequence of undoable/redoable commands
+* Run all commands
+* Run undo _and redo_ commands for each original command
+* Assert that we end up at the state before running undos
+
+## Actions are Redoable
+
+```{.haskell}
+hprop_undo_actions_are_redoable = property $ do
+  timelineAndFocus <- forAllWith showTimelineAndFocus (Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel)
+  initialState <- forAll (initializeState timelineAndFocus)
+  events <- forAll (Gen.list (Range.exponential 1 100) genUndoableTimelineEvent)
+  -- we begin by running 'events' on the original state
+  beforeUndos <- runTimelineStubbedWithExit events initialState
+  -- then we undo and redo all of them
+  afterRedos  <-
+    runTimelineStubbedWithExit (undoEvent <$ events) beforeUndos
+    >>= runTimelineStubbedWithExit (redoEvent <$ events)
+  -- that should result in a timeline equal to the one we had before
+  -- starting the undos
+  timelineToTree (beforeUndos ^. currentTimeline) === timelineToTree (afterRedos ^. currentTimeline)
+```
+## Undo/Redo Test Summary
+
+* These tests made the refactoring possible
+* Founds _many_ interim bugs
+  - Off-by-one index
+  - Inconsistent focus
+  - Non-invertible actions
+* After the tests passed: ran the GUI, it worked
+
+# Wrapping Up
 
 ## Summary
+
+* Property-based testing helps you:
+  - test _more_ of your system
+  - express _properties_ of your system
+  - shrink down failures to _minimal examples_
 
 ## References
 
 https://fsharpforfunandprofit.com/posts/property-based-testing-2/
   
 ## Questions?
-
-
-
-
-
-
-
-
 
 ## Thank You!
 
