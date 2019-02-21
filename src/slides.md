@@ -259,8 +259,10 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 ## Video Scene Classification
 
 * Komposition can automatically classify "scenes"
-  * **Moving segment:** _M_ seconds of consecutive non-equal frames
-  * **Still segment:** _S_ seconds of consecutive near-equal frames
+  * **Moving segment:** at least _M_ seconds of consecutive non-equal
+    frames
+  * **Still segment:** at least _S_ seconds of consecutive near-equal
+    frames
 * _M_ and _S_ are preconfigured thresholds of moving and
   still segment durations
   
@@ -297,6 +299,7 @@ hprop_classifies_still_segments_of_min_length = property $ do
 
   -- Convert test segments to actual pixel frames
   let pixelFrames = testSegmentsToPixelFrames segments
+
   ...
 ```
 
@@ -304,6 +307,7 @@ hprop_classifies_still_segments_of_min_length = property $ do
 
 ```{.haskell}
   ...
+
   -- Run classifier on pixel frames
   let counted = classifyMovement 2.0 (Pipes.each pixelFrames)
                 & Pipes.toList
@@ -344,13 +348,15 @@ hprop_classifies_same_scenes_as_input = property $ do
       fullDuration = foldMap
                      (durationOf AdjustedDuration . unwrapSegment)
                      segmentsWithTimespans
+
   ...
 ```
 
 ## Testing Moving Segment Timespans (cont.)
 
 ```{.haskell}
- ...
+  ...
+
   -- Run classifier on pixel frames
   classified <-
     (Pipes.each pixelFrames
@@ -370,6 +376,66 @@ hprop_classifies_same_scenes_as_input = property $ do
 ![](images/video-classification-failure.png)
 
 # <strong>Case Study 3:</strong> Focus and Timeline Consistency
+
+## Focus and Timeline
+
+* The _focus_ is a data structure that "points" to a part of the
+  timeline
+* The timeline and focus must at all points be consistent
+* User commands can:
+  - alter the timeline
+  - alter the focus
+* Undo/redo complicates things
+
+## Testing Focus and Timeline Consistency
+
+* Run the entire application logic, including:
+    - main control flow
+      - entering/exiting modes
+    - state
+    - event handling (stubbed)
+    - effects (stubbed)
+* Generate a random initial state
+* Generate a random sequence user commands
+* Run all commands until termination
+* Assert that the focus and timeline are consistent
+  - Checking that "get the focused part" returns something
+  
+## Focus and Timeline Property Test
+
+
+```{.haskell}
+hprop_focus_never_goes_invalid = property $ do
+
+  -- Generate the initial timeline and focus
+  timelineAndFocus <- forAllWith
+    showTimelineAndFocus
+    (Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel)
+
+  -- And from those, the initial timeline mode state
+  initialState <- forAll (initializeState timelineAndFocus)
+  
+  -- Generate a sequence of events (user commands)
+  events <- forAll $
+    Gen.list (Range.exponential 1 500) genFocusChangingEvents
+
+  ...
+```
+
+## Focus and Timeline Property Test (cont.)
+
+
+```{.haskell}
+  ...
+
+  -- Run all the user commands (wrapped in events)
+  endState <- runTimelineStubbedWithExit (concat events) initialState
+
+  -- Check that the focus points to something in the timeline
+  assert . isJust $ atFocus
+    (endState ^. existingProject.project.timelineFocus)
+    (endState ^. existingProject.project.timeline.UndoRedo.current)
+```
 
 # <strong>Case Study 4:</strong> Undo/Redo Symmetricity
 
