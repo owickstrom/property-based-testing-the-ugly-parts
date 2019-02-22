@@ -458,17 +458,36 @@ hprop_focus_never_goes_invalid = property $ do
 
 ```{.haskell}
 hprop_undo_actions_are_undoable = property $ do
-  timelineAndFocus <- forAllWith showTimelineAndFocus (Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel)
+
+  -- Generate initial timeline and focus
+  timelineAndFocus <- forAllWith showTimelineAndFocus $
+    Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel
+
+  -- Generate initial application state
   initialState <- forAll (initializeState timelineAndFocus)
-  events <- forAll (Gen.list (Range.exponential 1 100) genUndoableTimelineEvent)
-  -- we begin by running 'events' on the original state
+
+  -- Generate a sequence of undoable/redoable commands
+  events <- forAll $
+    Gen.list (Range.exponential 1 100) genUndoableTimelineEvent
+
+  ...
+```
+
+## Actions are Undoable (cont.)
+
+```{.haskell}
+  ...
+
+  -- We begin by running 'events' on the original state
   beforeUndos <- runTimelineStubbedWithExit events initialState
-  annotate (drawTree (timelineToTree (beforeUndos^.currentTimeline)))
-  -- then we run as many undo commands as undoable commands
+
+  -- Then we run as many undo commands as undoable commands
   afterUndos <- runTimelineStubbedWithExit (undoEvent <$ events) beforeUndos
-  -- that should result in a timeline equal to the one we at the
+
+  -- That should result in a timeline equal to the one we at the
   -- beginning
-  timelineToTree (initialState ^. currentTimeline) === timelineToTree (afterUndos ^. currentTimeline)
+  timelineToTree (initialState ^. currentTimeline)
+    === timelineToTree (afterUndos ^. currentTimeline)
 ```
 
 ## Testing Redo
@@ -483,19 +502,37 @@ hprop_undo_actions_are_undoable = property $ do
 
 ```{.haskell}
 hprop_undo_actions_are_redoable = property $ do
-  timelineAndFocus <- forAllWith showTimelineAndFocus (Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel)
+
+  -- Generate the initial timeline and focus
+  timelineAndFocus <- forAllWith showTimelineAndFocus $
+    Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel
+  
+  -- Generate the initial application state
   initialState <- forAll (initializeState timelineAndFocus)
-  events <- forAll (Gen.list (Range.exponential 1 100) genUndoableTimelineEvent)
-  -- we begin by running 'events' on the original state
+  
+  -- Generate a sequence of undoable/redoable commands
+  events <- forAll $
+    Gen.list (Range.exponential 1 100) genUndoableTimelineEvent
+```
+
+## Actions are Redoable (cont.)
+
+```{.haskell}
+  -- We begin by running 'events' on the original state
   beforeUndos <- runTimelineStubbedWithExit events initialState
-  -- then we undo and redo all of them
+
+  -- Then we undo and redo all of them
   afterRedos  <-
     runTimelineStubbedWithExit (undoEvent <$ events) beforeUndos
     >>= runTimelineStubbedWithExit (redoEvent <$ events)
-  -- that should result in a timeline equal to the one we had before
+
+  -- That should result in a timeline equal to the one we had before
   -- starting the undos
-  timelineToTree (beforeUndos ^. currentTimeline) === timelineToTree (afterRedos ^. currentTimeline)
+  timelineToTree (beforeUndos ^. currentTimeline)
+    === timelineToTree (afterRedos ^. currentTimeline)
 ```
+
+
 ## Undo/Redo Test Summary
 
 * These tests made the refactoring possible
