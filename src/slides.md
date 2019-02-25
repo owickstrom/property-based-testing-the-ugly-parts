@@ -30,23 +30,17 @@ classoption: dvipsnames
 ## Simple Examples
 
 * List reverse
+    
+    $\forall x . \mathit{reverse}(\mathit{reverse}(x)) \to x$
+    
+* Natural number arithmetic commutativity
 
-    ```haskell
-    prop_reverse xs =
-      reverse(reverse xs) == xs
-    ```
-* Natural number arithmetic
+    $\forall x\,y. (x+y) \to (y+x)$
 
-	```haskell
-	prop_commutative x y =
-	  x + y == y + x
-	```
 * Sorting algorithms
+    
+    $\forall x . \mathit{mySuperSort}(x) \to \mathit{industryStandardSort}(x)$
 
-	```haskell
-	prop_sort xs =
-	  mySuperSort xs == industryStandardSort xs
-	```
 
 ## Hedgehog
 
@@ -97,13 +91,9 @@ How many of you write sort algorithms in your day job?
 * Regular "writing testable code" guidelines apply:
   - Single responsibility
   - Determinism (not necessarily pure!)
+  - No global side-effects
 * Rich data types
 * Low coupling between interface and implementation
-
-## Techniques Not Covered
-
-* State-machine testing
-* "Database of inputs"
 
 ## Patterns for Properties
 
@@ -116,6 +106,12 @@ How many of you write sort algorithms in your day job?
   - "Hard to prove, easy to verify"
   - "The test oracle"
 
+## Today's Agenda
+
+* Motivating examples from Komposition
+* Techniques not covered
+    - State-machine testing
+    - "Database of inputs"
 
 # Case Studies from Komposition{.dark background=images/komposition-bg.png}
 
@@ -374,6 +370,19 @@ hprop_classifies_same_scenes_as_input = property $ do
 
 ![](images/video-classification-failure.png)
 
+## What Went Wrong?
+
+* There were multiple bugs:
+    - The specificiation was wrong
+    - The generators and tests had errors
+    - The implementation had errors (since its inception)
+* Next steps:
+  - Thought about the specification for a while
+  - Thought about how generators and tests should work, rewrote them
+  - Got minimal examples of failures, fixed the implementation
+* Thousands of tests ran successfully
+* Tried importing actual recorded video, had great results!
+
 # <strong>Case Study 3:</strong> Focus and Timeline Consistency
 
 ## Focus and Timeline
@@ -546,13 +555,23 @@ hprop_undo_actions_are_redoable = property $ do
 ## Summary
 
 * Property-based testing helps you:
-  - test _more_ of your system
-  - express _properties_ of your system
+  - run _more_ test
+  - express _properties_ of your system, rather than _anecdotes_
   - shrink down failures to _minimal examples_
+  - refactor and evolve existing functionality
+  - write new functionality
+* It's most likely available for your language of choice
+* Using them in Komposition:
+  - Made refactoring and evolving large parts of the system tractable
+    and much more safe
+  - Found existing errors in my thinking, my tests, my implementation
+  - It's been a joy
 
 ## References
 
-https://fsharpforfunandprofit.com/posts/property-based-testing-2/
+* [What is Property Based Testing?](https://hypothesis.works/articles/what-is-property-based-testing/) by David R. MacIver
+* [Experiences with QuickCheck: Testing the Hard Stuff and Staying Sane](https://www.cs.tufts.edu/~nr/cs257/archive/john-hughes/quviq-testing.pdf) by John Hughes
+* ["Choosing properties for property-based testing"](https://fsharpforfunandprofit.com/posts/property-based-testing-2/) by Scott Wlaschin
   
 ## Questions?
 
@@ -560,6 +579,6 @@ https://fsharpforfunandprofit.com/posts/property-based-testing-2/
 
 - Komposition: [owickstrom.github.io/komposition/](https://owickstrom.github.io/komposition/)
 - Slides: [owickstrom.github.io/property-based-testing-the-ugly-parts/](https://owickstrom.github.io/property-based-testing-the-ugly-parts/)
+- Thanks to [John Hughes](https://twitter.com/rjmh) for great feedback!
 - Image credits:
-  - ...
-- Thanks to [\@rjmh](https://twitter.com/rjmh) for great feedback!
+  - [I Have No Idea What I'm Doing](https://knowyourmeme.com/photos/234765-i-have-no-idea-what-im-doing)
