@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="generator" content="pandoc">
   <meta name="author" content="Oskar Wickström">
-  <title>Writing a Screencast Video Editor in Haskell</title>
+  <title>Property-Based Testing the Ugly Parts</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -38,9 +38,9 @@
     <div class="slides">
 
 <section id="title-slide">
-  <h1 class="title">Writing a Screencast Video Editor in Haskell</h1>
+  <h1 class="title">Property-Based Testing the Ugly Parts</h1>
   <p class="author">Oskar Wickström</p>
-  <p class="date">October 2018</p>
+  <p class="date">February 2019</p>
 </section>
 
 <section id="about-me" class="slide level2">
@@ -51,68 +51,125 @@
 <li>Blog at <a href="https://wickstrom.tech">wickstrom.tech</a></li>
 <li>Maintain some open source projects</li>
 <li><a href="https://haskell-at-work.com">Haskell at Work</a> screencasts</li>
-<li>Spent the last six months writing a screencast video editor</li>
+<li>Spent the last year writing a screencast video editor</li>
 </ul>
 </section>
-<section><section id="background" class="title-slide slide level1 align-top contain" data-background="images/evolution.png"><h1>Background</h1></section><section id="haskell-at-work" class="slide level2">
-<h2>Haskell at Work</h2>
+<section><section id="introduction" class="title-slide slide level1"><h1>Introduction</h1></section><section id="property-based-testing" class="slide level2">
+<h2>Property-based testing</h2>
 <ul>
-<li>“Haskell at Work” screencasts
+<li>Testing <em>properties</em> of your system</li>
+<li>Large set of inputs</li>
+<li>Static and dynamic languages
 <ul>
-<li>Centered around code editor</li>
-<li>Fast-paced</li>
-<li>No webcam overlay or effects</li>
-</ul></li>
-<li>My workflow
-<ul>
-<li>Write a detailed script</li>
-<li>Record video separately</li>
-<li>Record audio separately</li>
-<li>Cut and join all “scenes”</li>
+<li>QuickCheck</li>
+<li>Hypothesis</li>
+<li>test.check</li>
+<li>Hedgehog</li>
 </ul></li>
 </ul>
-</section><section id="video-editors" class="slide level2">
-<h2>Video Editors</h2>
+</section><section id="simple-examples" class="slide level2">
+<h2>Simple Examples</h2>
 <ul>
-<li>Free video editors (Kdenlive, OpenShot, …)
-<ul>
-<li>No good normalization and audio gate effects</li>
-<li>Unsuited for my workflow</li>
-<li>Written in C++</li>
-</ul></li>
-<li>Commerical video editors (Premiere Pro, Final Cut Pro, …)
-<ul>
-<li>Proprietary</li>
-<li>Expensive</li>
-<li>Unsuited for my workflow</li>
-</ul></li>
+<li><p>List reverse</p>
+<p><span class="math inline">\(\forall x . \mathit{reverse}(\mathit{reverse}(x)) \to x\)</span></p></li>
+<li><p>Natural number arithmetic commutativity</p>
+<p><span class="math inline">\(\forall x\,y. (x+y) \to (y+x)\)</span></p></li>
+<li><p>Sorting algorithms</p>
+<p><span class="math inline">\(\forall x . \mathit{mySuperSort}(x) \to \mathit{industryStandardSort}(x)\)</span></p></li>
 </ul>
-<aside class="notes">
+</section><section id="hedgehog" class="slide level2">
+<h2>Hedgehog</h2>
 <ul>
-<li>I first tried free video editors …</li>
-<li>Then I tried proprietary video editors …</li>
-<li>So, I started “The Great Yak Shave”</li>
+<li>Random generated inputs</li>
+<li>Integrated shrinking</li>
+<li>Great error reporting</li>
+<li>Concurrent test execution</li>
+<li>Not using type classes(!)</li>
 </ul>
-</aside>
+</section><section id="list-reverse-with-hedgehog" class="slide level2">
+<h2>List Reverse with Hedgehog</h2>
+<pre class="haskell"><code>prop_reverse = property $ do
+  xs &lt;- forAll $
+    Gen.list
+    (Range.linear 0 10)
+    (Gen.int Range.linearBounded)
+  reverse (reverse xs) === xs
+</code></pre>
+</section><section id="list-sort-with-hedgehog" class="slide level2">
+<h2>List Sort with Hedgehog</h2>
+<pre class="haskell"><code>prop_sort = property $ do
+  xs &lt;- forAll $
+    Gen.list
+    (Range.linear 0 10)
+    (Gen.int Range.linearBounded)
+  mySuperSort xs === industryStandardSort xs
+</code></pre>
+</section><section id="failures" class="slide level2">
+<h2>Failures</h2>
+<p><img data-src="images/diff.png" /></p>
+</section><section id="rhetorical-question" class="slide level2">
+<h2>Rhetorical Question</h2>
+<p>How many of you write sort algorithms in your day job?</p>
+</section><section id="how-do-i-use-this-in-my-job" class="slide level2">
+<h2>How do I use this in my job?</h2>
+<ul>
+<li>What if you’re working with:
+<ul>
+<li>Backends with databases and integrations?</li>
+<li>Frontends with GUIs and user input?</li>
+<li>Data pipelines and analytics?</li>
+</ul></li>
+<li>Hard to write properties</li>
+<li>Fewer examples</li>
+</ul>
 </section></section>
-<section><section id="the-great-yak-shave" class="title-slide slide level1 dark align-bottom" data-background="images/yak.jpg"><h1>The Great Yak Shave</h1></section><section id="building-a-video-editor" class="slide level2">
-<h2>Building a Video Editor</h2>
+<section><section id="property-based-testing-for-the-busy-programmer" class="title-slide slide level1 dark" data-background="images/dog.jpg"><h1>Property-Based Testing for the Busy Programmer</h1></section><section id="testing-the-ugly-parts" class="slide level2">
+<h2>Testing the “Ugly” Parts</h2>
 <ul>
-<li>I decided to build a screencast video editor
+<li>Not everything will be small pure functions</li>
+<li>Complex interactions between larger modules</li>
+<li>Stateful</li>
+<li>Side-effects</li>
+</ul>
+</section><section id="designing-for-testability" class="slide level2">
+<h2>Designing for Testability</h2>
 <ul>
-<li>Tailored to my workflow</li>
-<li>Minimal, do one thing well</li>
+<li>Regular “writing testable code” guidelines apply:
+<ul>
+<li>Single responsibility</li>
+<li>Determinism (not necessarily pure!)</li>
+<li>No global side-effects</li>
 </ul></li>
-<li>I decided write it in Haskell
+<li>Rich data types</li>
+<li>Low coupling between interface and implementation</li>
+</ul>
+</section><section id="patterns-for-properties" class="slide level2">
+<h2>Patterns for Properties</h2>
 <ul>
-<li>Didn’t want to write an Electron app</li>
-<li>Settled on GTK+</li>
+<li><a href="https://fsharpforfunandprofit.com/posts/property-based-testing-2/">“Choosing properties for property-based testing”</a> by Scott Wlaschin
+<ul>
+<li>“Different paths, same destination”</li>
+<li>“There and back again”</li>
+<li>“Some things never change”</li>
+<li>“The more things change, the more they stay the same”</li>
+<li>“Solve a smaller problem first”</li>
+<li>“Hard to prove, easy to verify”</li>
+<li>“The test oracle”</li>
 </ul></li>
-<li>Dog-fooding some of my own libraries</li>
+</ul>
+</section><section id="todays-agenda" class="slide level2">
+<h2>Today’s Agenda</h2>
+<ul>
+<li>Motivating examples from Komposition</li>
+<li>Techniques not covered
+<ul>
+<li>State-machine testing</li>
+<li>“Database of inputs”</li>
+</ul></li>
 </ul>
 </section></section>
-<section><section id="komposition" class="title-slide slide level1 dark" data-background="#00008B"><h1>Komposition</h1></section><section id="komposition-overview" class="slide level2">
-<h2>Komposition Overview</h2>
+<section><section id="case-studies-from-komposition" class="title-slide slide level1 dark" data-background="images/komposition-bg.png"><h1>Case Studies from Komposition</h1></section><section id="komposition" class="slide level2">
+<h2>Komposition</h2>
 <table>
 <tr>
 <td>
@@ -123,6 +180,7 @@
 <ul>
 <li>Sequences</li>
 <li>Parallels</li>
+<li>Tracks</li>
 <li>Clips and gaps</li>
 </ul></li>
 <li>Automatic scene classification</li>
@@ -130,44 +188,40 @@
 <li>Keyboard-driven editing workflow
 </td>
 <td width="50%">
-<img data-src="images/komposition.png" alt="Komposition" />
+<img data-src="images/komposition-light.png" alt="Komposition" />
 </td>
 </tr>
 </table></li>
 </ul>
-</section><section id="documentation" class="slide level2">
-<h2>Documentation</h2>
+</section><section id="complex-features" class="slide level2">
+<h2>Complex Features</h2>
 <ul>
-<li><a href="https://owickstrom.github.io/komposition/" class="uri">https://owickstrom.github.io/komposition/</a>
+<li>Most complex features in Komposition
 <ul>
-<li>User guide</li>
-<li>Tutorial screencast</li>
+<li>Focus and timeline transformations</li>
+<li>Video classification</li>
+<li>Rendering</li>
+<li>Application logic</li>
 </ul></li>
+<li>Spend effort on testing those</li>
 </ul>
-<p><img data-src="images/documentation.png" alt="Komposition documentation" style="width:60.0%" /></p>
-</section><section id="keyboard-driven-editing" class="slide level2">
-<h2>Keyboard-Driven Editing</h2>
-<table>
-<tr>
-<td>
-<ul>
-<li>Vim-like bindings</li>
-<li>Corresponding menu items</li>
-<li>Some mouse support</li>
-<li>Help dialog showing current mode’s key bindings
-</td>
-<td width="50%">
-<img data-src="images/keybindings.png" alt="Komposition" />
-</td>
-</tr>
-</table></li>
-</ul>
+</section><section id="case-studies" class="slide level2">
+<h2>Case Studies</h2>
+<ol type="1">
+<li>Timeline Flattening</li>
+<li>Video Scene Classification</li>
+<li>Focus and Timeline Consistency</li>
+<li>Undo/Redo Symmetry</li>
+</ol>
 </section></section>
 <section><section id="hierarchical-timeline" class="title-slide slide level1" data-background="#dddddd"><h1>Hierarchical Timeline</h1></section><section id="clips" class="slide level2">
 <h2>Clips</h2>
 <p><img data-src="images/timeline1.svg" alt="Clips" style="width:80.0%" /></p>
 <aside class="notes">
-Clips are put in video and audio tracks within parallels
+<ul>
+<li>Clips are put in video and audio tracks within parallels</li>
+<li>Tracks are played in parallel, hence the name</li>
+</ul>
 </aside>
 </section><section id="video-still-frames" class="slide level2">
 <h2>Video Still Frames</h2>
@@ -205,301 +259,382 @@ If the video track is shorter, it will be padded with still frames
 </ul>
 </aside>
 </section></section>
-<section><section id="demo" class="title-slide slide level1 dark" data-background="#000000" data-background-video="images/demo.gif" data-background-video-loop="true"><h1>Demo</h1></section></section>
-<section><section id="implementation" class="title-slide slide level1 dark" data-background="images/cogs.jpg"><h1>Implementation</h1></section><section id="striving-for-purely-functional" class="slide level2">
-<h2>Striving for Purely Functional</h2>
+<section><section id="case-study-1-timeline-flattening" class="title-slide slide level1"><h1><strong>Case Study 1:</strong> Timeline Flattening</h1></section><section id="timeline-flattening" class="slide level2">
+<h2>Timeline Flattening</h2>
 <ul>
-<li>Pure functions and data structures in core domain
+<li>Timeline is hierarchical
 <ul>
-<li>Timeline</li>
-<li>Focus</li>
-<li>Commands</li>
-<li>Event handling</li>
-<li>Key bindings</li>
-<li>Parts of video classification</li>
+<li>Sequences</li>
+<li>Parallels</li>
+<li>Tracks</li>
+<li>Clips and gaps</li>
 </ul></li>
-<li>Impure parts:
+<li>FFmpeg render knows only about two flat tracks
 <ul>
-<li>Audio and video import</li>
-<li>Sentence classification</li>
-<li>Preview frame rendering</li>
-<li>Main application control flow</li>
+<li>Video track</li>
+<li>Audio track</li>
 </ul></li>
 </ul>
-<aside class="notes">
+</section><section id="timeline-flattening-graphical" class="slide level2">
+<h2>Timeline Flattening (Graphical)</h2>
+<p><img data-src="images/komposition-flattening.svg" alt="Timeline flattening" style="width:100.0%" /></p>
+</section><section id="testing-duration" class="slide level2">
+<h2>Testing Duration</h2>
+<pre class="haskell"><code>hprop_flat_timeline_has_same_duration_as_hierarchical =
+  property $ do
+    t &lt;- forAll $ Gen.timeline (Range.exponential 0 20) Gen.parallelWithClips
+    let Just flat = Render.flattenTimeline t
+    <mark class="inline">durationOf AdjustedDuration t === durationOf AdjustedDuration flat</mark></code></pre>
+</section><section id="testing-clip-occurence" class="slide level2">
+<h2>Testing Clip Occurence</h2>
+<pre class="haskell"><code>hprop_flat_timeline_has_same_clips_as_hierarchical =
+  property $ do
+    t &lt;- forAll $ Gen.timeline (Range.exponential 0 20) Gen.parallelWithClips
+    let Just flat = Render.flattenTimeline t
+    <mark class="inline">timelineVideoClips t === flatVideoClips flat</mark>
+    <mark class="inline">timelineAudioClips t === flatAudioClips flat</mark></code></pre>
+</section><section id="further-improvements" class="slide level2">
+<h2>Further Improvements</h2>
 <ul>
-<li>I’m striving to keep the core domain code pure</li>
-<li>“Functional core, imperative shell”, Gary Bernhardt</li>
-<li>This includes: …</li>
-<li>There are still impure parts, like: …</li>
-</ul>
-</aside>
-</section><section id="gtk" class="slide level2">
-<h2>GTK+</h2>
+<li>Missing properties
 <ul>
-<li>Haskell bindings from <code>gi-gtk</code></li>
-<li>Regular GTK+ was too painful
-<ul>
-<li>Imperative</li>
-<li>Callback-oriented</li>
-<li>Everything in IO, no explicit model</li>
+<li>How are video gaps padded with still frames?</li>
+<li>Same flat result regardless of grouping (split/join sequences, then flatten)</li>
 </ul></li>
-<li>Started <code>gi-gtk-declarative</code>
+<li>Padding with frames from other parallels
 <ul>
-<li>Declarative using data structures</li>
-<li>VDOM-like diffing</li>
-<li>Event handling based on pure functions and values</li>
-<li>Custom widgets</li>
+<li>Frames are only picked from video clips within the parallel</li>
+<li>Should pick from <em>any</em> video clip within the timeline</li>
+<li>Write properties to guide the refactoring</li>
 </ul></li>
-<li>Imperative <code>gi-gtk</code> where needed</li>
-</ul>
-</section><section id="type-indexed-state-machines" class="slide level2">
-<h2>Type-Indexed State Machines</h2>
-<ul>
-<li><p>Using <code>motor</code> and <code>row-types</code> for typed state machines:</p>
-<pre class="haskell"><code>start
-  :: Name n
-  -&gt; KeyMaps
-  -&gt; Actions m &#39;[ n !+ State m WelcomeScreenMode] r ()</code></pre>
-<pre class="haskell"><code>returnToTimeline
-  :: ReturnsToTimeline mode
-  =&gt; Name n
-  -&gt; TimelineModel
-  -&gt; Actions m &#39;[ n := State m mode !--&gt; State m TimelineMode] r ()</code></pre></li>
-<li>Most complicated aspect of the codebase</li>
-<li><p>Currently being rewritten</p></li>
-</ul>
-<aside class="notes">
-<ul>
-<li>I’m using a library I’ve been working on called “Motor” …</li>
-<li>The most complicated aspect of the Komposition codebade</li>
-<li>Not sure if it’s worth the complexity
-<ul>
-<li>But in combination with GADTs for state-specific events and commands …</li>
-</ul></li>
-</ul>
-</aside>
-</section><section id="singleton-pattern" class="slide level2">
-<h2>Singleton Pattern</h2>
-<pre class="haskell"><code>data Mode
-  = WelcomeScreenMode
-  | TimelineMode
-  | LibraryMode
-  | ImportMode
-
-data SMode m where
-  SWelcomeScreenMode :: SMode WelcomeScreenMode
-  STimelineMode      :: SMode TimelineMode
-  SLibraryMode       :: SMode LibraryMode
-  SImportMode        :: SMode ImportMode</code></pre>
-</section><section id="using-singletons" class="slide level2">
-<h2>Using Singletons</h2>
-<pre class="haskell"><code>data Command (mode :: Mode) where
-  Cancel       :: Command mode
-  Help         :: Command mode
-  FocusCommand :: FocusCommand -&gt; Command TimelineMode
-  JumpFocus    :: Focus SequenceFocusType -&gt; Command TimelineMode
-  -- ...
-
-keymaps :: SMode m -&gt; KeyMap (Command m)
-keymaps =
-  \case
-    SWelcomeScreenMode -&gt;
-      [ ([KeyChar &#39;q&#39;], Mapping Cancel)
-      , ([KeyEscape], Mapping Cancel)
-      , ([KeyChar &#39;?&#39;], Mapping Help)
-      ]
-    -- ...</code></pre>
-</section><section id="automatic-scene-classification" class="slide level2">
-<h2>Automatic Scene Classification</h2>
-<ul>
-<li><p>Creates a producer of frames</p>
-<pre class="haskell"><code>readVideoFile :: MonadIO m =&gt; FilePath -&gt; Producer (Timed Frame) m ()</code></pre></li>
-<li><p>Custom algorithm for classification</p>
-<pre class="haskell"><code>classifyMovement
-    :: Monad m
-    =&gt; Time -- ^ Minimum segment duration
-    -&gt; Producer (Timed RGB8Frame) m ()
-    -&gt; Producer (Classified (Timed RGB8Frame)) m ()
-
-classifyMovingScenes ::
-     Monad m
-  =&gt; Duration -- ^ Full length of video
-  -&gt; Producer (Classified (Timed RGB8Frame)) m ()
-  -&gt; Producer ProgressUpdate m [TimeSpan]</code></pre></li>
-</ul>
-</section><section id="automatic-sentence-classification" class="slide level2">
-<h2>Automatic Sentence Classification</h2>
-<ul>
-<li>Currently using <code>sox</code>
-<ul>
-<li>Normalization</li>
-<li>Noise gate</li>
-<li>Auto-splitting by silence</li>
-</ul></li>
-<li>Creates segment audio files on disk (can’t extract timespans)</li>
-</ul>
-</section><section id="rendering" class="slide level2">
-<h2>Rendering</h2>
-<ul>
-<li>Flattening timeline
-<ul>
-<li>Conversion from hierarchical timeline to a flat representation</li>
-<li>Pads gaps and empty parts with still frames</li>
-</ul></li>
-<li>Flat representation is converted to a FFmpeg command
-<ul>
-<li>Data types for FFmpeg CLI syntax</li>
-<li>Common flags</li>
-<li>Filter graph</li>
-</ul></li>
-</ul>
-</section><section id="preview" class="slide level2">
-<h2>Preview</h2>
-<ul>
-<li>Proxy media for performance</li>
-<li>Same FFmpeg backend as when rendering
-<ul>
-<li>Output is a streaming HTTP server</li>
-<li>Not ideal, would like to use a named pipe or domain socket</li>
-</ul></li>
-<li>GStreamer widget
-<ul>
-<li>Consumes the HTTP stream</li>
-<li>Embedded in the GTK+ user interface</li>
-</ul></li>
-<li>Unreliable</li>
-<li>Currently doesn’t work on individual clips and gaps</li>
 </ul>
 </section></section>
-<section><section id="testing" class="title-slide slide level1 dark" data-background="images/testing.jpg"><h1>Testing</h1></section><section id="color-tinting-video-classifier" class="slide level2">
-<h2>Color-Tinting Video Classifier</h2>
+<section><section id="case-study-2-video-scene-classification" class="title-slide slide level1"><h1><strong>Case Study 2:</strong> Video Scene Classification</h1></section><section id="video-scene-classification" class="slide level2">
+<h2>Video Scene Classification</h2>
 <ul>
-<li>Tints the original video with red/green based on classification</li>
-<li>Easier to test classifier on real recordings</li>
-</ul>
-<p><img data-src="images/color-tinting.gif" alt="Komposition" /></p>
-</section><section id="property-based-testing" class="slide level2">
-<h2>Property-Based Testing</h2>
+<li>Komposition can automatically classify “scenes”
 <ul>
-<li>Timeline commands and movement
-<ul>
-<li>Generates sequences of commands</li>
-<li>Applies all commands</li>
-<li>Resulting focus should always be valid</li>
+<li><strong>Moving segment:</strong> at least <em>M</em> seconds of consecutive non-equal frames</li>
+<li><strong>Still segment:</strong> at least <em>S</em> seconds of consecutive near-equal frames</li>
 </ul></li>
-<li>Video scene classification
-<ul>
-<li>Generates known test scenes</li>
-<li>Translates to real frame data</li>
-<li>Runs classifier, compares to known test scenes</li>
-</ul></li>
-<li>Flattening of hierchical timeline</li>
-<li>Roundtrip properties of FFmpeg format printers and parsers</li>
+<li><em>M</em> and <em>S</em> are preconfigured thresholds of moving and still segment durations</li>
 </ul>
-</section><section id="example-based-testing" class="slide level2">
-<h2>Example-Based Testing</h2>
+</section><section id="visualizing-with-color-tinting" class="slide level2">
+<h2>Visualizing with Color Tinting</h2>
+<p><img data-src="images/color-tinting.gif" alt="Video classification shown with color tinting" /></p>
+</section><section id="testing-video-classification" class="slide level2">
+<h2>Testing Video Classification</h2>
 <ul>
-<li>Commands</li>
-<li>Navigation</li>
-<li>FFmpeg syntax printing</li>
+<li>Generate high-level representation of <em>expected</em> output segments</li>
+<li>Convert output representation to actual pixel frames
+<ul>
+<li>Moving frames: random color pixels</li>
+<li>Still frames: all pixels with same color</li>
+</ul></li>
+<li>Run the classifier on the pixel frames</li>
+<li>Test properties based on:
+<ul>
+<li>the expected output representation</li>
+<li>the actual classified output</li>
+</ul></li>
+</ul>
+</section><section id="two-properties-of-video-classification" class="slide level2">
+<h2>Two Properties of Video Classification</h2>
+<ol type="1">
+<li>Classified still segments must be at least <em>S</em> seconds long
+<ul>
+<li>Exception: First and last segment may be shorter</li>
+</ul></li>
+<li>Classified moving segments must have correct timespans
+<ul>
+<li>Compared to the generated <em>expected</em> output representation</li>
+</ul></li>
+</ol>
+</section><section id="testing-still-segment-lengths" class="slide level2">
+<h2>Testing Still Segment Lengths</h2>
+<pre class="haskell"><code>hprop_classifies_still_segments_of_min_length = property $ do
+
+  -- Generate test segments
+  segments &lt;- forAll $
+    genSegments (Range.linear 1 (frameRate * 2)) resolution
+
+  -- Convert test segments to actual pixel frames
+  let pixelFrames = testSegmentsToPixelFrames segments
+
+  ...</code></pre>
+</section><section id="testing-still-segment-lengths-cont." class="slide level2">
+<h2>Testing Still Segment Lengths (cont.)</h2>
+<pre class="haskell"><code>  ...
+
+  -- Run classifier on pixel frames
+  let counted = classifyMovement 2.0 (Pipes.each pixelFrames)
+                &amp; Pipes.toList
+                &amp; countSegments
+  
+  -- Sanity check: same number of frames
+  countTestSegmentFrames segments === totalClassifiedFrames counted
+
+  -- Then ignore first and last segment, and verify all other segments
+  case dropFirstAndLast counted of
+    Just middle -&gt; traverse_ (assertStillLengthAtLeast 2.0) middle
+    Nothing     -&gt; success
+  where
+    resolution = 20 :. 20</code></pre>
+</section><section id="success" class="slide level2">
+<h2>Success!</h2>
+<pre class="text"><code>&gt; Hedgehog.check hprop_classifies_still_segments_of_min_length 
+  ✓ &lt;interactive&gt; passed 100 tests.</code></pre>
+</section><section id="testing-moving-segment-timespans" class="slide level2">
+<h2>Testing Moving Segment Timespans</h2>
+<pre class="haskell"><code>hprop_classifies_same_scenes_as_input = property $ do
+
+  -- Generate test segments
+  segments &lt;- forAll 
+    genSegments (Range.linear (frameRate * 1) (frameRate * 5)) resolution
+
+  -- Convert test segments to timespanned ones, and actual pixel frames
+  let segmentsWithTimespans = segments
+                              &amp; map segmentWithDuration
+                              &amp; segmentTimeSpans
+      pixelFrames = testSegmentsToPixelFrames segments
+      fullDuration = foldMap
+                     (durationOf AdjustedDuration . unwrapSegment)
+                     segmentsWithTimespans
+
+  ...</code></pre>
+</section><section id="testing-moving-segment-timespans-cont." class="slide level2">
+<h2>Testing Moving Segment Timespans (cont.)</h2>
+<pre class="haskell"><code>  ...
+
+  -- Run classifier on pixel frames
+  classified &lt;-
+    (Pipes.each pixelFrames
+     &amp; classifyMovement 2.0
+     &amp; classifyMovingScenes fullDuration)
+    &gt;-&gt; Pipes.drain
+    &amp; Pipes.runEffect
+
+  -- Check classified timespan equivalence
+  unwrapScenes segmentsWithTimespans === classified
+
+  where resolution = 20 :. 20</code></pre>
+</section><section id="failure" class="slide level2">
+<h2>Failure!</h2>
+<p><img data-src="images/video-classification-failure.png" /></p>
+</section><section id="what-went-wrong" class="slide level2">
+<h2>What Went Wrong?</h2>
+<ul>
+<li>There were multiple bugs:
+<ul>
+<li>The specificiation was wrong</li>
+<li>The generators and tests had errors</li>
+<li>The implementation had errors (since its inception)</li>
+</ul></li>
+<li>Next steps:
+<ul>
+<li>Thought about the specification for a while</li>
+<li>Thought about how generators and tests should work, rewrote them</li>
+<li>Got minimal examples of failures, fixed the implementation</li>
+</ul></li>
+<li>Thousands of tests ran successfully</li>
+<li>Tried importing actual recorded video, had great results!</li>
 </ul>
 </section></section>
-<section><section id="used-packages" class="title-slide slide level1"><h1>Used Packages</h1></section><section id="haskell-gi" class="slide level2">
-<h2>haskell-gi</h2>
+<section><section id="case-study-3-focus-and-timeline-consistency" class="title-slide slide level1"><h1><strong>Case Study 3:</strong> Focus and Timeline Consistency</h1></section><section id="focus-and-timeline" class="slide level2">
+<h2>Focus and Timeline</h2>
 <ul>
-<li>Bindings for GTK+, GStreamer, and more
+<li>The <em>focus</em> is a data structure that “points” to a part of the timeline</li>
+<li>The timeline and focus must at all points be consistent</li>
+<li>User commands can:
 <ul>
-<li>gi-gobject</li>
-<li>gi-glib</li>
-<li>gi-gst</li>
-<li>gi-gtk</li>
-<li>gi-gdk</li>
-<li>gi-gdkpixbuf</li>
-<li>gi-pango</li>
+<li>alter the timeline</li>
+<li>alter the focus</li>
 </ul></li>
-<li>Extended with gi-gtk-declarative</li>
+<li>Undo/redo complicates things</li>
 </ul>
-</section><section id="massiv-massiv-io" class="slide level2">
-<h2>massiv &amp; massiv-io</h2>
+</section><section id="testing-focus-and-timeline-consistency" class="slide level2">
+<h2>Testing Focus and Timeline Consistency</h2>
 <ul>
-<li>Used in video classifier</li>
-<li>Parallel comparison of pixel arrays</li>
-<li>No-copy conversion from JuicyPixels frames to massiv arrays</li>
-<li>Lower-resolution proxy media helps with performance</li>
+<li>Generate a random initial state</li>
+<li>Generate a random sequence user commands</li>
+<li>Run all commands until termination
+<ul>
+<li>main control flow
+<ul>
+<li>entering/exiting modes</li>
+</ul></li>
+<li>state</li>
+<li>event handling (stubbed)</li>
+<li>effects (stubbed)</li>
+</ul></li>
+<li>Assert that the focus and timeline are consistent
+<ul>
+<li>Checking that “get the focused part” returns something</li>
+</ul></li>
 </ul>
-</section><section id="pipes" class="slide level2">
-<h2>Pipes</h2>
+</section><section id="focus-and-timeline-property-test" class="slide level2">
+<h2>Focus and Timeline Property Test</h2>
+<pre class="haskell"><code>hprop_focus_never_goes_invalid = property $ do
+
+  -- Generate the initial timeline and focus
+  timelineAndFocus &lt;- forAllWith
+    showTimelineAndFocus
+    (Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel)
+
+  -- And from those, the initial timeline mode state
+  initialState &lt;- forAll (initializeState timelineAndFocus)
+  
+  -- Generate a sequence of events (user commands)
+  events &lt;- forAll $
+    Gen.list (Range.exponential 1 500) genFocusChangingEvents
+
+  ...</code></pre>
+</section><section id="focus-and-timeline-property-test-cont." class="slide level2">
+<h2>Focus and Timeline Property Test (cont.)</h2>
+<pre class="haskell"><code>  ...
+
+  -- Run all the user commands (wrapped in events)
+  endState &lt;- runTimelineStubbedWithExit (concat events) initialState
+
+  -- Check that the focus points to something in the timeline
+  assert . isJust $ atFocus
+    (endState ^. existingProject.project.timelineFocus)
+    (endState ^. existingProject.project.timeline.UndoRedo.current)</code></pre>
+</section></section>
+<section><section id="case-study-4-undoredo-symmetry" class="title-slide slide level1"><h1><strong>Case Study 4:</strong> Undo/Redo Symmetry</h1></section><section id="undoredo-symmetry" class="slide level2">
+<h2>Undo/Redo Symmetry</h2>
 <ul>
-<li>Streaming frame reader and writer around <code>ffmpeg-light</code></li>
-<li><p>IO operations with streaming progress notifications</p>
-<pre class="haskell"><code>importVideoFileAutoSplit
-  :: (MonadIO m, MonadSafe m)
-  =&gt; VideoSettings
-  -&gt; FilePath
-  -&gt; FilePath
-  -&gt; Producer ProgressUpdate m [VideoAsset]</code></pre></li>
-<li><code>pipes-safe</code> for handling resources</li>
-<li><p><code>pipes-parse</code> for <code>StateT</code>-based transformations</p></li>
+<li>Undo/Redo was previously implemented as stacks of previous/future states</li>
+<li>Consumed gigabytes of disk space and RAM for projects with many edits</li>
+<li>Rewrote the implementation to only store “invertible actions”</li>
 </ul>
-</section><section id="others" class="slide level2">
-<h2>Others</h2>
+</section><section id="testing-undo" class="slide level2">
+<h2>Testing Undo</h2>
 <ul>
-<li>protolude</li>
-<li>lens</li>
-<li>typed-process</li>
+<li>Generate an initial state</li>
+<li>Generate a sequence of undoable commands</li>
+<li>Run all commands</li>
+<li>Run undo command for each original command</li>
+<li>Assert that we end up at the initial state</li>
+</ul>
+</section><section id="actions-are-undoable" class="slide level2">
+<h2>Actions are Undoable</h2>
+<pre class="haskell"><code>hprop_undo_actions_are_undoable = property $ do
+
+  -- Generate initial timeline and focus
+  timelineAndFocus &lt;- forAllWith showTimelineAndFocus $
+    Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel
+
+  -- Generate initial application state
+  initialState &lt;- forAll (initializeState timelineAndFocus)
+
+  -- Generate a sequence of undoable/redoable commands
+  events &lt;- forAll $
+    Gen.list (Range.exponential 1 100) genUndoableTimelineEvent
+
+  ...</code></pre>
+</section><section id="actions-are-undoable-cont." class="slide level2">
+<h2>Actions are Undoable (cont.)</h2>
+<pre class="haskell"><code>  ...
+
+  -- We begin by running &#39;events&#39; on the original state
+  beforeUndos &lt;- runTimelineStubbedWithExit events initialState
+
+  -- Then we run as many undo commands as undoable commands
+  afterUndos &lt;- runTimelineStubbedWithExit (undoEvent &lt;$ events) beforeUndos
+
+  -- That should result in a timeline equal to the one we at the
+  -- beginning
+  timelineToTree (initialState ^. currentTimeline)
+    === timelineToTree (afterUndos ^. currentTimeline)</code></pre>
+</section><section id="testing-redo" class="slide level2">
+<h2>Testing Redo</h2>
+<ul>
+<li>Generate an initial state</li>
+<li>Generate a sequence of undoable/redoable commands</li>
+<li>Run all commands</li>
+<li>Run undo <em>and redo</em> commands for each original command</li>
+<li>Assert that we end up at the state before running undos</li>
+</ul>
+</section><section id="actions-are-redoable" class="slide level2">
+<h2>Actions are Redoable</h2>
+<pre class="haskell"><code>hprop_undo_actions_are_redoable = property $ do
+
+  -- Generate the initial timeline and focus
+  timelineAndFocus &lt;- forAllWith showTimelineAndFocus $
+    Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel
+  
+  -- Generate the initial application state
+  initialState &lt;- forAll (initializeState timelineAndFocus)
+  
+  -- Generate a sequence of undoable/redoable commands
+  events &lt;- forAll $
+    Gen.list (Range.exponential 1 100) genUndoableTimelineEvent</code></pre>
+</section><section id="actions-are-redoable-cont." class="slide level2">
+<h2>Actions are Redoable (cont.)</h2>
+<pre class="haskell"><code>  -- We begin by running &#39;events&#39; on the original state
+  beforeUndos &lt;- runTimelineStubbedWithExit events initialState
+
+  -- Then we undo and redo all of them
+  afterRedos  &lt;-
+    runTimelineStubbedWithExit (undoEvent &lt;$ events) beforeUndos
+    &gt;&gt;= runTimelineStubbedWithExit (redoEvent &lt;$ events)
+
+  -- That should result in a timeline equal to the one we had before
+  -- starting the undos
+  timelineToTree (beforeUndos ^. currentTimeline)
+    === timelineToTree (afterRedos ^. currentTimeline)</code></pre>
+</section><section id="undoredo-test-summary" class="slide level2">
+<h2>Undo/Redo Test Summary</h2>
+<ul>
+<li>These tests made the refactoring possible</li>
+<li>Founds <em>many</em> interim bugs
+<ul>
+<li>Off-by-one index</li>
+<li>Inconsistent focus</li>
+<li>Non-invertible actions</li>
+</ul></li>
+<li>After the tests passed: ran the GUI, it worked</li>
 </ul>
 </section></section>
-<section><section id="summary" class="title-slide slide level1"><h1>Summary</h1></section><section id="retrospective" class="slide level2">
-<h2>Retrospective</h2>
+<section><section id="wrapping-up" class="title-slide slide level1"><h1>Wrapping Up</h1></section><section id="summary" class="slide level2">
+<h2>Summary</h2>
 <ul>
-<li>The best parts
+<li>Property-based testing helps you:
 <ul>
-<li>Building a useful tool</li>
-<li>Haskell and GHC</li>
-<li>Keeping core domain pure</li>
-<li>Testing with Hedgehog</li>
+<li>run <em>more</em> test</li>
+<li>express <em>properties</em> of your system, rather than <em>anecdotes</em></li>
+<li>shrink down failures to <em>minimal examples</em></li>
+<li>refactor and evolve existing functionality</li>
+<li>write new functionality</li>
 </ul></li>
-<li>The problematic parts
+<li>It’s most likely available for your language of choice</li>
+<li>Using them in Komposition:
 <ul>
-<li>Video and audio codecs, containers, streaming</li>
-<li>Executing external programs</li>
-<li>GTK+ in Haskell</li>
-<li>Dependency managment (non-Haskell dependencies)</li>
+<li>Made refactoring and evolving large parts of the system tractable and much more safe</li>
+<li>Found existing errors in my thinking, my tests, my implementation</li>
+<li>It’s been a joy</li>
 </ul></li>
 </ul>
-</section><section id="next-steps" class="slide level2">
-<h2>Next Steps</h2>
+</section><section id="references" class="slide level2">
+<h2>References</h2>
 <ul>
-<li>Features
-<ul>
-<li>More commands (yank, paste, join, …)</li>
-<li>Preview any timeline part</li>
-<li>Adjust clips</li>
-</ul></li>
-<li>Improvements
-<ul>
-<li>Technical debt, refactoring</li>
-<li>Content-addressed project files (reuse, avoiding collision)</li>
-<li>Optimized FFmpeg rendering</li>
-<li>Optimized diffing (gi-gtk-declarative)</li>
-</ul></li>
-<li>Packaging (Debian, macOS, Windows, nixpkgs)</li>
-<li>… and much more</li>
+<li><a href="https://hypothesis.works/articles/what-is-property-based-testing/">What is Property Based Testing?</a> by David R. MacIver</li>
+<li><a href="https://www.cs.tufts.edu/~nr/cs257/archive/john-hughes/quviq-testing.pdf">Experiences with QuickCheck: Testing the Hard Stuff and Staying Sane</a> by John Hughes</li>
+<li><a href="https://fsharpforfunandprofit.com/posts/property-based-testing-2/">“Choosing properties for property-based testing”</a> by Scott Wlaschin</li>
 </ul>
+</section><section id="questions" class="slide level2">
+<h2>Questions?</h2>
 </section><section id="thank-you" class="slide level2">
 <h2>Thank You!</h2>
 <ul>
 <li>Komposition: <a href="https://owickstrom.github.io/komposition/">owickstrom.github.io/komposition/</a></li>
-<li>Slides: <a href="https://owickstrom.github.io/writing-a-screencast-video-editor-in-haskell/">owickstrom.github.io/writing-a-screencast-video-editor-in-haskell/</a></li>
+<li>Slides: <a href="https://owickstrom.github.io/property-based-testing-the-ugly-parts/">owickstrom.github.io/property-based-testing-the-ugly-parts/</a></li>
+<li>Thanks to <a href="https://twitter.com/rjmh">John Hughes</a> for great feedback!</li>
 <li>Image credits:
 <ul>
-<li><a href="https://commons.wikimedia.org/w/index.php?curid=22106967">Yak by travelwayoflife - Flickr, CC BY-SA 2.0</a></li>
-<li><a href="https://commons.wikimedia.org/w/index.php?curid=2165296">Human evolution scheme by M. Garde - Self work (Original by: José-Manuel Benitos), CC BY-SA 3.0</a></li>
-<li><a href="https://commons.wikimedia.org/wiki/File:Old_Cogs_(5084228263).jpg">Old Cogs by Emmanuel Huybrechts from Laval, Canada (Old Cogs) CC BY 2.0, via Wikimedia Commons</a></li>
-<li><a href="https://www.reddit.com/r/BetterEveryLoop/comments/6gsbs3/save_the_skateboard/">Save the skateboard!</a></li>
+<li><a href="https://knowyourmeme.com/photos/234765-i-have-no-idea-what-im-doing">I Have No Idea What I’m Doing</a></li>
 </ul></li>
-<li>Thanks to <a href="https://twitter.com/sassela">@sassela</a> for great feedback!</li>
 </ul>
 </section></section>
     </div>
@@ -521,11 +656,28 @@ classifyMovingScenes ::
         transition: 'slide', // none/fade/slide/convex/concave/zoom
         // Transition speed
         transitionSpeed: 'fast', // default/fast/slow
+        math: {
+          mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
 
         // Optional reveal.js plugins
         dependencies: [
           { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
           { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true },
+          { src: 'reveal.js/plugin/math/math.js', async: true },
           { src: 'reveal.js/plugin/notes/notes.js', async: true }
         ]
       });
