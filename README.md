@@ -2,6 +2,8 @@
 
 A talk for MF#K, February 26, 2019
 
+Slides at: https://owickstrom.github.io/property-based-testing-the-ugly-parts/
+
 ## Building
 
 This requires:
