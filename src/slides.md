@@ -89,9 +89,8 @@ How many of you write sort algorithms in your day job?
 
 * Not everything will be small pure functions
 * Complex interactions between larger modules
-* Non-determinism
-  - Statefulness
-  - Side-effects
+* Stateful
+* Side-effects
 
 ## Designing for Testability
 
@@ -101,9 +100,10 @@ How many of you write sort algorithms in your day job?
 * Rich data types
 * Low coupling between interface and implementation
 
-## State Machine Testing
+## Techniques Not Covered
 
-...
+* State-machine testing
+* "Database of inputs"
 
 ## Patterns for Properties
 
@@ -120,7 +120,6 @@ How many of you write sort algorithms in your day job?
 # Case Studies from Komposition{.dark background=images/komposition-bg.png}
 
 ## Komposition
-
 
 <table>
   <tr>
