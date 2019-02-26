@@ -15,7 +15,13 @@ classoption: dvipsnames
 - [Haskell at Work](https://haskell-at-work.com) screencasts
 - Spent the last year writing a screencast video editor
 
-# Introduction
+## Agenda
+
+* Quick Introduction
+* Property-Based Testing for the Busy Programmer
+* Case Studies from Komposition
+
+# Quick Introduction
 
 ## Property-based testing
 
@@ -106,12 +112,10 @@ How many of you write sort algorithms in your day job?
   - "Hard to prove, easy to verify"
   - "The test oracle"
 
-## Today's Agenda
+## Other Interesting Techniques
 
-* Motivating examples from Komposition
-* Techniques not covered
-    - State-machine testing
-    - "Database of inputs"
+* State-machine testing
+* "Database of inputs"
 
 # Case Studies from Komposition{.dark background=images/komposition-bg.png}
 
@@ -283,7 +287,7 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 2. Classified moving segments must have correct timespans
    - Comparing the generated _expected_ output to the classified
      timespans
-   - This is just a week old
+   - Wrote this a week ago
 
 ## Testing Still Segment Lengths
 
