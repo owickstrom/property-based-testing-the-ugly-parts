@@ -72,7 +72,7 @@
 <ul>
 <li><p>List reverse</p>
 <p><span class="math inline">\(\forall x . \mathit{reverse}(\mathit{reverse}(x)) \to x\)</span></p></li>
-<li><p>Natural number arithmetic commutativity</p>
+<li><p>Addition commutativity</p>
 <p><span class="math inline">\(\forall x\,y. (x+y) \to (y+x)\)</span></p></li>
 <li><p>Sorting algorithms</p>
 <p><span class="math inline">\(\forall x . \mathit{mySuperSort}(x) \to \mathit{industryStandardSort}(x)\)</span></p></li>
@@ -305,7 +305,7 @@ If the video track is shorter, it will be padded with still frames
 <ul>
 <li>Frames are only picked from video clips within the parallel</li>
 <li>Should pick from <em>any</em> video clip within the timeline</li>
-<li>Write properties to guide the refactoring</li>
+<li>Write properties to guide my work</li>
 </ul></li>
 </ul>
 </section></section>
@@ -347,7 +347,8 @@ If the video track is shorter, it will be padded with still frames
 </ul></li>
 <li>Classified moving segments must have correct timespans
 <ul>
-<li>Compared to the generated <em>expected</em> output representation</li>
+<li>Comparing the generated <em>expected</em> output to the classified timespans</li>
+<li>This is just a week old</li>
 </ul></li>
 </ol>
 </section><section id="testing-still-segment-lengths" class="slide level2">
@@ -367,7 +368,7 @@ If the video track is shorter, it will be padded with still frames
 <pre class="haskell"><code>  ...
 
   -- Run classifier on pixel frames
-  let counted = classifyMovement 2.0 (Pipes.each pixelFrames)
+  let counted = classifyMovement 1.0 (Pipes.each pixelFrames)
                 &amp; Pipes.toList
                 &amp; countSegments
   
@@ -376,10 +377,10 @@ If the video track is shorter, it will be padded with still frames
 
   -- Then ignore first and last segment, and verify all other segments
   case dropFirstAndLast counted of
-    Just middle -&gt; traverse_ (assertStillLengthAtLeast 2.0) middle
+    Just middle -&gt; traverse_ (assertStillLengthAtLeast 1.0) middle
     Nothing     -&gt; success
   where
-    resolution = 20 :. 20</code></pre>
+    resolution = 10 :. 10</code></pre>
 </section><section id="success" class="slide level2">
 <h2>Success!</h2>
 <pre class="text"><code>&gt; Hedgehog.check hprop_classifies_still_segments_of_min_length 
@@ -409,7 +410,7 @@ If the video track is shorter, it will be padded with still frames
   -- Run classifier on pixel frames
   classified &lt;-
     (Pipes.each pixelFrames
-     &amp; classifyMovement 2.0
+     &amp; classifyMovement 1.0
      &amp; classifyMovingScenes fullDuration)
     &gt;-&gt; Pipes.drain
     &amp; Pipes.runEffect
@@ -417,7 +418,7 @@ If the video track is shorter, it will be padded with still frames
   -- Check classified timespan equivalence
   unwrapScenes segmentsWithTimespans === classified
 
-  where resolution = 20 :. 20</code></pre>
+  where resolution = 10 :. 10</code></pre>
 </section><section id="failure" class="slide level2">
 <h2>Failure!</h2>
 <p><img data-src="images/video-classification-failure.png" /></p>
@@ -657,7 +658,7 @@ If the video track is shorter, it will be padded with still frames
         // Transition speed
         transitionSpeed: 'fast', // default/fast/slow
         math: {
-          mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
+          mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js',
           config: 'TeX-AMS_HTML-full',
           tex2jax: {
             inlineMath: [['\\(','\\)']],

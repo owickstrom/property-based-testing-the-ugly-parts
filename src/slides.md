@@ -33,7 +33,7 @@ classoption: dvipsnames
     
     $\forall x . \mathit{reverse}(\mathit{reverse}(x)) \to x$
     
-* Natural number arithmetic commutativity
+* Addition commutativity
 
     $\forall x\,y. (x+y) \to (y+x)$
 
@@ -247,7 +247,7 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 * Padding with frames from other parallels
   - Frames are only picked from video clips within the parallel
   - Should pick from _any_ video clip within the timeline
-  - Write properties to guide the refactoring
+  - Write properties to guide my work
 
 # <strong>Case Study 2:</strong> Video Scene Classification
 
@@ -281,7 +281,9 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 1. Classified still segments must be at least _S_ seconds long
    - Exception: First and last segment may be shorter
 2. Classified moving segments must have correct timespans
-   - Compared to the generated _expected_ output representation
+   - Comparing the generated _expected_ output to the classified
+     timespans
+   - This is just a week old
 
 ## Testing Still Segment Lengths
 
@@ -304,7 +306,7 @@ hprop_classifies_still_segments_of_min_length = property $ do
   ...
 
   -- Run classifier on pixel frames
-  let counted = classifyMovement 2.0 (Pipes.each pixelFrames)
+  let counted = classifyMovement 1.0 (Pipes.each pixelFrames)
                 & Pipes.toList
                 & countSegments
   
@@ -313,10 +315,10 @@ hprop_classifies_still_segments_of_min_length = property $ do
 
   -- Then ignore first and last segment, and verify all other segments
   case dropFirstAndLast counted of
-    Just middle -> traverse_ (assertStillLengthAtLeast 2.0) middle
+    Just middle -> traverse_ (assertStillLengthAtLeast 1.0) middle
     Nothing     -> success
   where
-    resolution = 20 :. 20
+    resolution = 10 :. 10
 ```
 
 ## Success!
@@ -355,7 +357,7 @@ hprop_classifies_same_scenes_as_input = property $ do
   -- Run classifier on pixel frames
   classified <-
     (Pipes.each pixelFrames
-     & classifyMovement 2.0
+     & classifyMovement 1.0
      & classifyMovingScenes fullDuration)
     >-> Pipes.drain
     & Pipes.runEffect
@@ -363,7 +365,7 @@ hprop_classifies_same_scenes_as_input = property $ do
   -- Check classified timespan equivalence
   unwrapScenes segmentsWithTimespans === classified
 
-  where resolution = 20 :. 20
+  where resolution = 10 :. 10
 ```
 
 ## Failure!
