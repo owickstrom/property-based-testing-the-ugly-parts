@@ -98,7 +98,6 @@ How many of you write sort algorithms in your day job?
   - Single responsibility
   - Determinism (not necessarily pure!)
   - No global side-effects
-* Rich data types
 * Low coupling between interface and implementation
 
 ## Patterns for Properties
