@@ -21,7 +21,7 @@ classoption: dvipsnames
 * Property-Based Testing for the Busy Programmer
 * Case Studies from Komposition
 
-# Quick Introduction
+# Introduction
 
 ## Property-based testing
 
