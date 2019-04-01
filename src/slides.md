@@ -160,7 +160,7 @@ How many of you write sort algorithms in your day job?
 
 ## Clips
 
-![Clips](images/timeline1.svg){width=80%}
+![Clips](images/timeline1.png){width=700}
 
 <aside class="notes">
 - Clips are put in video and audio tracks within parallels
@@ -169,7 +169,7 @@ How many of you write sort algorithms in your day job?
 
 ## Video Still Frames
 
-![Video Still Frames](images/timeline2.svg){width=80%}
+![Video Still Frames](images/timeline2.png){width=700}
 
 <aside class="notes">
 If the video track is shorter, it will be padded with still frames
@@ -177,7 +177,7 @@ If the video track is shorter, it will be padded with still frames
 
 ## Adding Gaps
 
-![Adding Gaps](images/timeline3.svg){width=100%}
+![Adding Gaps](images/timeline3.png){width=700}
 
 <aside class="notes">
 - You can add explicit gaps in video and audio tracks
@@ -186,7 +186,7 @@ If the video track is shorter, it will be padded with still frames
 
 ## Sequences
 
-![Sequences](images/timeline4.svg){width=100%}
+![Sequences](images/timeline4.png){width=1200}
 
 <aside class="notes">
 - Parallels are put in sequences
@@ -196,7 +196,7 @@ If the video track is shorter, it will be padded with still frames
 
 ## Timeline
 
-![Timeline](images/timeline5.svg){width=100%}
+![Timeline](images/timeline5.png){width=1500}
 
 <aside class="notes">
 - The top level is the timeline
@@ -219,7 +219,7 @@ If the video track is shorter, it will be padded with still frames
   
 ## Timeline Flattening (Graphical)
 
-![Timeline flattening](images/komposition-flattening.svg){width=100%}
+![Timeline flattening](images/komposition-flattening.png){width=100%}
 
 ## Testing Duration
 
@@ -242,10 +242,10 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
     timelineAudioClips t === flatAudioClips flat
 ```
 
-## Further Improvements
+## More on Timeline Flattening
 
-* Missing properties
-  - How are video gaps padded with still frames?
+* Other properties
+  - How video gaps are padded with still frames
   - Same flat result regardless of grouping (split/join sequences, then flatten)
 * Padding with frames from other parallels
   - Frames are only picked from video clips within the parallel
