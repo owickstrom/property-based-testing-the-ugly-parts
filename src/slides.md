@@ -17,36 +17,11 @@ classoption: dvipsnames
 
 ## Agenda
 
-* Quick Introduction
+* Introduction to Hedgehog
 * Property-Based Testing for the Busy Programmer
 * Case Studies from Komposition
 
-# Introduction
-
-## Property-based testing
-
-* Testing _properties_ of your system
-* Large set of inputs
-* Static and dynamic languages
-	* QuickCheck
-	* Hypothesis
-	* test.check
-	* Hedgehog
-
-## Simple Examples
-
-* List reverse
-    
-    $\forall x . \mathit{reverse}(\mathit{reverse}(x)) \to x$
-    
-* Addition commutativity
-
-    $\forall x\,y. (x+y) \to (y+x)$
-
-* Sorting algorithms
-    
-    $\forall x . \mathit{mySuperSort}(x) \to \mathit{industryStandardSort}(x)$
-
+# Introduction to Hedgehog
 
 ## Hedgehog
 
@@ -54,7 +29,8 @@ classoption: dvipsnames
 * Integrated shrinking
 * Great error reporting
 * Concurrent test execution
-* Not using type classes(!)
+* Generators as values
+    - Unlike `Arbitrary` in QuickCheck
 
 ## List Reverse with Hedgehog
 
@@ -96,9 +72,9 @@ How many of you write sort algorithms in your day job?
 
 * Regular "writing testable code" guidelines apply:
   - Single responsibility
-  - Determinism (not necessarily pure!)
+  - Determinism
   - No global side-effects
-* Low coupling between interface and implementation
+  - Low coupling between interface and implementation
 
 ## Patterns for Properties
 
@@ -115,6 +91,7 @@ How many of you write sort algorithms in your day job?
 
 * State-machine testing
 * "Database of inputs"
+  - [Testing Our Ruby and Haskell Implementations Side-By-Side](https://blog.mpowered.team/posts/2018-testing-ruby-haskell-implementations.html)
 
 # Case Studies from Komposition{.dark background=images/komposition-bg.png}
 
