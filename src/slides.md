@@ -234,12 +234,13 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 ## Video Scene Classification
 
 * Komposition can automatically classify "scenes"
-  * **Moving segment:** at least _M_ seconds of consecutive non-equal
-    frames
+  * **Moving segment:** consecutive non-equal frames
   * **Still segment:** at least _S_ seconds of consecutive near-equal
     frames
-* _M_ and _S_ are preconfigured thresholds of moving and
-  still segment durations
+* _S_ is a preconfigured threshold for still segment duration
+* Edge cases:
+  - First segment is always a moving segment
+  - Last segment may be shorter
   
 ## Visualizing with Color Tinting
 
@@ -249,8 +250,8 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 
 * Generate high-level representation of _expected_ output segments
 * Convert output representation to actual pixel frames
-  - Moving frames: random color pixels
-  - Still frames: all pixels with same color
+  - Moving frames: flipping between grey and white pixels
+  - Still frames: all black pixels
 * Run the classifier on the pixel frames
 * Test properties based on:
   - the expected output representation
@@ -259,11 +260,11 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 ## Two Properties of Video Classification
 
 1. Classified still segments must be at least _S_ seconds long
-   - Exception: First and last segment may be shorter
+   - Ignoring the last segment (which may be a shorter still segment)
 2. Classified moving segments must have correct timespans
    - Comparing the generated _expected_ output to the classified
      timespans
-   - Wrote this a week ago
+   - (here were bugs!)
 
 ## Testing Still Segment Lengths
 
@@ -293,9 +294,10 @@ hprop_classifies_still_segments_of_min_length = property $ do
   -- Sanity check: same number of frames
   countTestSegmentFrames segments === totalClassifiedFrames counted
 
-  -- Then ignore first and last segment, and verify all other segments
-  case dropFirstAndLast counted of
-    Just middle -> traverse_ (assertStillLengthAtLeast 1.0) middle
+  -- Then ignore last segment (which can be a shorter still segment),
+  -- and verify all other segments
+  case initMay counted of
+    Just rest -> traverse_ (assertStillLengthAtLeast 1.0) rest
     Nothing     -> success
   where
     resolution = 10 :. 10
@@ -555,12 +557,13 @@ hprop_undo_actions_are_redoable = property $ do
 * [Experiences with QuickCheck: Testing the Hard Stuff and Staying Sane](https://www.cs.tufts.edu/~nr/cs257/archive/john-hughes/quviq-testing.pdf) by John Hughes
 * ["Choosing properties for property-based testing"](https://fsharpforfunandprofit.com/posts/property-based-testing-2/) by Scott Wlaschin
   
-## Questions?
-
 ## Thank You!
 
+- "Property-Based Testing in a Screencast Editor" series:
+  - [Introduction](https://wickstrom.tech/programming/2019/03/02/property-based-testing-in-a-screencast-editor-introduction.html)
+  - [Timeline Flattening](https://wickstrom.tech/programming/2019/03/24/property-based-testing-in-a-screencast-editor-case-study-1.html)
 - Komposition: [owickstrom.github.io/komposition/](https://owickstrom.github.io/komposition/)
 - Slides: [owickstrom.github.io/property-based-testing-the-ugly-parts/](https://owickstrom.github.io/property-based-testing-the-ugly-parts/)
-- Thanks to [John Hughes](https://twitter.com/rjmh) for great feedback!
+- Thanks to [John Hughes](https://twitter.com/rjmh) for feedback
 - Image credits:
   - [I Have No Idea What I'm Doing](https://knowyourmeme.com/photos/234765-i-have-no-idea-what-im-doing)
