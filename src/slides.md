@@ -18,7 +18,7 @@ classoption: dvipsnames
 ## Agenda
 
 * Introduction to Hedgehog
-* Property-Based Testing for the Busy Programmer
+* Property-Based Testing for the Industry Programmer
 * Case Studies from Komposition
 
 # Introduction to Hedgehog
@@ -59,7 +59,7 @@ How many of you write sort algorithms in your day job?
 * Hard to write properties
 * Fewer examples
 
-# Property-Based Testing for the Busy Programmer{.dark background=images/dog.jpg}
+# Property-Based Testing for the Industry Programmer{.dark background=images/dog.jpg}
 
 ## Testing the "Ugly" Parts
 
@@ -86,6 +86,8 @@ How many of you write sort algorithms in your day job?
   - "Solve a smaller problem first"
   - "Hard to prove, easy to verify"
   - "The test oracle"
+- Study others' property tests
+- Practice!
 
 ## Other Interesting Techniques
 
@@ -193,7 +195,7 @@ If the video track is shorter, it will be padded with still frames
 * FFmpeg render knows only about two flat tracks
   - Video track
   - Audio track
-  
+
 ## Timeline Flattening (Graphical)
 
 ![Timeline flattening](images/komposition-flattening.png){width=100%}
@@ -241,7 +243,7 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 * Edge cases:
   - First segment is always a moving segment
   - Last segment may be shorter
-  
+
 ## Visualizing with Color Tinting
 
 ![Video classification shown with color tinting](images/color-tinting.gif)
@@ -256,7 +258,7 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 * Test properties based on:
   - the expected output representation
   - the actual classified output
-  
+
 ## Two Properties of Video Classification
 
 1. Classified still segments must be at least _S_ seconds long
@@ -290,7 +292,7 @@ hprop_classifies_still_segments_of_min_length = property $ do
   let counted = classifyMovement 1.0 (Pipes.each pixelFrames)
                 & Pipes.toList
                 & countSegments
-  
+
   -- Sanity check: same number of frames
   countTestSegmentFrames segments === totalClassifiedFrames counted
 
@@ -306,7 +308,7 @@ hprop_classifies_still_segments_of_min_length = property $ do
 ## Success!
 
 ```{.text}
-> Hedgehog.check hprop_classifies_still_segments_of_min_length 
+> Hedgehog.check hprop_classifies_still_segments_of_min_length
   ✓ <interactive> passed 100 tests.
 ```
 
@@ -316,7 +318,7 @@ hprop_classifies_still_segments_of_min_length = property $ do
 hprop_classifies_same_scenes_as_input = property $ do
 
   -- Generate test segments
-  segments <- forAll 
+  segments <- forAll
     genSegments (Range.linear (frameRate * 1) (frameRate * 5)) resolution
 
   -- Convert test segments to timespanned ones, and actual pixel frames
@@ -391,7 +393,7 @@ hprop_classifies_same_scenes_as_input = property $ do
     - effects (stubbed)
 * Assert that the focus and timeline are consistent
   - Checking that "get the focused part" returns something
-  
+
 ## Focus and Timeline Property Test
 
 
@@ -405,7 +407,7 @@ hprop_focus_never_goes_invalid = property $ do
 
   -- And from those, the initial timeline mode state
   initialState <- forAll (initializeState timelineAndFocus)
-  
+
   -- Generate a sequence of events (user commands)
   events <- forAll $
     Gen.list (Range.exponential 1 500) genFocusChangingEvents
@@ -498,10 +500,10 @@ hprop_undo_actions_are_redoable = property $ do
   -- Generate the initial timeline and focus
   timelineAndFocus <- forAllWith showTimelineAndFocus $
     Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel
-  
+
   -- Generate the initial application state
   initialState <- forAll (initializeState timelineAndFocus)
-  
+
   -- Generate a sequence of undoable/redoable commands
   events <- forAll $
     Gen.list (Range.exponential 1 100) genUndoableTimelineEvent
@@ -538,13 +540,9 @@ hprop_undo_actions_are_redoable = property $ do
 
 ## Summary
 
-* Property-based testing helps you:
-  - run _more_ test
-  - express _properties_ of your system, rather than _anecdotes_
-  - shrink down failures to _minimal examples_
-  - refactor and evolve existing functionality
-  - write new functionality
-* It's most likely available for your language of choice
+* Property-based testing is not only for pure functions!
+  - Effectful actions
+  - Integration tests
 * Using them in Komposition:
   - Made refactoring and evolving large parts of the system tractable
     and much more safe
@@ -556,7 +554,7 @@ hprop_undo_actions_are_redoable = property $ do
 * [What is Property Based Testing?](https://hypothesis.works/articles/what-is-property-based-testing/) by David R. MacIver
 * [Experiences with QuickCheck: Testing the Hard Stuff and Staying Sane](https://www.cs.tufts.edu/~nr/cs257/archive/john-hughes/quviq-testing.pdf) by John Hughes
 * ["Choosing properties for property-based testing"](https://fsharpforfunandprofit.com/posts/property-based-testing-2/) by Scott Wlaschin
-  
+
 ## Thank You!
 
 - "Property-Based Testing in a Screencast Editor" series:
