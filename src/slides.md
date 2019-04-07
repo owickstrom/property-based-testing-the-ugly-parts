@@ -13,7 +13,7 @@ classoption: dvipsnames
 - Blog at [wickstrom.tech](https://wickstrom.tech)
 - Maintain some open source projects
 - [Haskell at Work](https://haskell-at-work.com) screencasts
-- Spent the last year writing a screencast video editor
+- Spent the last year writing a screencast video editor called _Komposition_
 
 ## Agenda
 
@@ -46,7 +46,7 @@ classoption: dvipsnames
 
 ![](images/diff.png)
 
-## Rhetorical Question
+## Poll
 
 How many of you write sort algorithms in your day job?
 
@@ -102,7 +102,7 @@ How many of you write sort algorithms in your day job?
 <table>
   <tr>
     <td>
-- Cross-platform GUI application
+- Desktop GUI application
 - Modal
 - Hierarchical timeline
     - Sequences
