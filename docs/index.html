@@ -51,48 +51,28 @@
 <li>Blog at <a href="https://wickstrom.tech">wickstrom.tech</a></li>
 <li>Maintain some open source projects</li>
 <li><a href="https://haskell-at-work.com">Haskell at Work</a> screencasts</li>
-<li>Spent the last year writing a screencast video editor</li>
+<li>Spent the last year writing a screencast video editor called <em>Komposition</em></li>
 </ul>
 </section>
 <section id="agenda" class="slide level2">
 <h2>Agenda</h2>
 <ul>
-<li>Quick Introduction</li>
-<li>Property-Based Testing for the Busy Programmer</li>
+<li>Introduction to Hedgehog</li>
+<li>Property-Based Testing for the Industry Programmer</li>
 <li>Case Studies from Komposition</li>
 </ul>
 </section>
-<section><section id="introduction" class="title-slide slide level1"><h1>Introduction</h1></section><section id="property-based-testing" class="slide level2">
-<h2>Property-based testing</h2>
-<ul>
-<li>Testing <em>properties</em> of your system</li>
-<li>Large set of inputs</li>
-<li>Static and dynamic languages
-<ul>
-<li>QuickCheck</li>
-<li>Hypothesis</li>
-<li>test.check</li>
-<li>Hedgehog</li>
-</ul></li>
-</ul>
-</section><section id="simple-examples" class="slide level2">
-<h2>Simple Examples</h2>
-<ul>
-<li><p>List reverse</p>
-<p><span class="math inline">\(\forall x . \mathit{reverse}(\mathit{reverse}(x)) \to x\)</span></p></li>
-<li><p>Addition commutativity</p>
-<p><span class="math inline">\(\forall x\,y. (x+y) \to (y+x)\)</span></p></li>
-<li><p>Sorting algorithms</p>
-<p><span class="math inline">\(\forall x . \mathit{mySuperSort}(x) \to \mathit{industryStandardSort}(x)\)</span></p></li>
-</ul>
-</section><section id="hedgehog" class="slide level2">
+<section><section id="introduction-to-hedgehog" class="title-slide slide level1"><h1>Introduction to Hedgehog</h1></section><section id="hedgehog" class="slide level2">
 <h2>Hedgehog</h2>
 <ul>
 <li>Random generated inputs</li>
 <li>Integrated shrinking</li>
 <li>Great error reporting</li>
 <li>Concurrent test execution</li>
-<li>Not using type classes(!)</li>
+<li>Generators as values
+<ul>
+<li>Unlike <code>Arbitrary</code> in QuickCheck</li>
+</ul></li>
 </ul>
 </section><section id="list-reverse-with-hedgehog" class="slide level2">
 <h2>List Reverse with Hedgehog</h2>
@@ -115,8 +95,8 @@
 </section><section id="failures" class="slide level2">
 <h2>Failures</h2>
 <p><img data-src="images/diff.png" /></p>
-</section><section id="rhetorical-question" class="slide level2">
-<h2>Rhetorical Question</h2>
+</section><section id="poll" class="slide level2">
+<h2>Poll</h2>
 <p>How many of you write sort algorithms in your day job?</p>
 </section><section id="how-do-i-use-this-in-my-job" class="slide level2">
 <h2>How do I use this in my job?</h2>
@@ -131,7 +111,7 @@
 <li>Fewer examples</li>
 </ul>
 </section></section>
-<section><section id="property-based-testing-for-the-busy-programmer" class="title-slide slide level1 dark" data-background="images/dog.jpg"><h1>Property-Based Testing for the Busy Programmer</h1></section><section id="testing-the-ugly-parts" class="slide level2">
+<section><section id="property-based-testing-for-the-industry-programmer" class="title-slide slide level1 dark" data-background="images/dog.jpg"><h1>Property-Based Testing for the Industry Programmer</h1></section><section id="testing-the-ugly-parts" class="slide level2">
 <h2>Testing the “Ugly” Parts</h2>
 <ul>
 <li>Not everything will be small pure functions</li>
@@ -145,10 +125,10 @@
 <li>Regular “writing testable code” guidelines apply:
 <ul>
 <li>Single responsibility</li>
-<li>Determinism (not necessarily pure!)</li>
+<li>Determinism</li>
 <li>No global side-effects</li>
-</ul></li>
 <li>Low coupling between interface and implementation</li>
+</ul></li>
 </ul>
 </section><section id="patterns-for-properties" class="slide level2">
 <h2>Patterns for Properties</h2>
@@ -163,12 +143,17 @@
 <li>“Hard to prove, easy to verify”</li>
 <li>“The test oracle”</li>
 </ul></li>
+<li>Study others’ property tests</li>
+<li>Practice!</li>
 </ul>
 </section><section id="other-interesting-techniques" class="slide level2">
 <h2>Other Interesting Techniques</h2>
 <ul>
 <li>State-machine testing</li>
-<li>“Database of inputs”</li>
+<li>“Database of inputs”
+<ul>
+<li><a href="https://blog.mpowered.team/posts/2018-testing-ruby-haskell-implementations.html">Testing Our Ruby and Haskell Implementations Side-By-Side</a></li>
+</ul></li>
 </ul>
 </section></section>
 <section><section id="case-studies-from-komposition" class="title-slide slide level1 dark" data-background="images/komposition-bg.png"><h1>Case Studies from Komposition</h1></section><section id="komposition" class="slide level2">
@@ -177,7 +162,7 @@
 <tr>
 <td>
 <ul>
-<li>Cross-platform GUI application</li>
+<li>Desktop GUI application</li>
 <li>Modal</li>
 <li>Hierarchical timeline
 <ul>
@@ -219,7 +204,7 @@
 </section></section>
 <section><section id="hierarchical-timeline" class="title-slide slide level1" data-background="#dddddd"><h1>Hierarchical Timeline</h1></section><section id="clips" class="slide level2">
 <h2>Clips</h2>
-<p><img data-src="images/timeline1.svg" alt="Clips" style="width:80.0%" /></p>
+<p><img data-src="images/timeline1.png" alt="Clips" width="700" /></p>
 <aside class="notes">
 <ul>
 <li>Clips are put in video and audio tracks within parallels</li>
@@ -228,13 +213,13 @@
 </aside>
 </section><section id="video-still-frames" class="slide level2">
 <h2>Video Still Frames</h2>
-<p><img data-src="images/timeline2.svg" alt="Video Still Frames" style="width:80.0%" /></p>
+<p><img data-src="images/timeline2.png" alt="Video Still Frames" width="700" /></p>
 <aside class="notes">
 If the video track is shorter, it will be padded with still frames
 </aside>
 </section><section id="adding-gaps" class="slide level2">
 <h2>Adding Gaps</h2>
-<p><img data-src="images/timeline3.svg" alt="Adding Gaps" style="width:100.0%" /></p>
+<p><img data-src="images/timeline3.png" alt="Adding Gaps" width="700" /></p>
 <aside class="notes">
 <ul>
 <li>You can add explicit gaps in video and audio tracks</li>
@@ -243,7 +228,7 @@ If the video track is shorter, it will be padded with still frames
 </aside>
 </section><section id="sequences" class="slide level2">
 <h2>Sequences</h2>
-<p><img data-src="images/timeline4.svg" alt="Sequences" style="width:100.0%" /></p>
+<p><img data-src="images/timeline4.png" alt="Sequences" width="1200" /></p>
 <aside class="notes">
 <ul>
 <li>Parallels are put in sequences</li>
@@ -253,7 +238,7 @@ If the video track is shorter, it will be padded with still frames
 </aside>
 </section><section id="timeline" class="slide level2">
 <h2>Timeline</h2>
-<p><img data-src="images/timeline5.svg" alt="Timeline" style="width:100.0%" /></p>
+<p><img data-src="images/timeline5.png" alt="Timeline" width="1500" /></p>
 <aside class="notes">
 <ul>
 <li>The top level is the timeline</li>
@@ -280,7 +265,7 @@ If the video track is shorter, it will be padded with still frames
 </ul>
 </section><section id="timeline-flattening-graphical" class="slide level2">
 <h2>Timeline Flattening (Graphical)</h2>
-<p><img data-src="images/komposition-flattening.svg" alt="Timeline flattening" style="width:100.0%" /></p>
+<p><img data-src="images/komposition-flattening.png" alt="Timeline flattening" style="width:100.0%" /></p>
 </section><section id="testing-duration" class="slide level2">
 <h2>Testing Duration</h2>
 <pre class="haskell"><code>hprop_flat_timeline_has_same_duration_as_hierarchical =
@@ -296,12 +281,12 @@ If the video track is shorter, it will be padded with still frames
     let Just flat = Render.flattenTimeline t
     <mark class="inline">timelineVideoClips t === flatVideoClips flat</mark>
     <mark class="inline">timelineAudioClips t === flatAudioClips flat</mark></code></pre>
-</section><section id="further-improvements" class="slide level2">
-<h2>Further Improvements</h2>
+</section><section id="more-on-timeline-flattening" class="slide level2">
+<h2>More on Timeline Flattening</h2>
 <ul>
-<li>Missing properties
+<li>Other properties
 <ul>
-<li>How are video gaps padded with still frames?</li>
+<li>How video gaps are padded with still frames</li>
 <li>Same flat result regardless of grouping (split/join sequences, then flatten)</li>
 </ul></li>
 <li>Padding with frames from other parallels
@@ -317,10 +302,15 @@ If the video track is shorter, it will be padded with still frames
 <ul>
 <li>Komposition can automatically classify “scenes”
 <ul>
-<li><strong>Moving segment:</strong> at least <em>M</em> seconds of consecutive non-equal frames</li>
+<li><strong>Moving segment:</strong> consecutive non-equal frames</li>
 <li><strong>Still segment:</strong> at least <em>S</em> seconds of consecutive near-equal frames</li>
 </ul></li>
-<li><em>M</em> and <em>S</em> are preconfigured thresholds of moving and still segment durations</li>
+<li><em>S</em> is a preconfigured threshold for still segment duration</li>
+<li>Edge cases:
+<ul>
+<li>First segment is always a moving segment</li>
+<li>Last segment may be shorter</li>
+</ul></li>
 </ul>
 </section><section id="visualizing-with-color-tinting" class="slide level2">
 <h2>Visualizing with Color Tinting</h2>
@@ -331,8 +321,8 @@ If the video track is shorter, it will be padded with still frames
 <li>Generate high-level representation of <em>expected</em> output segments</li>
 <li>Convert output representation to actual pixel frames
 <ul>
-<li>Moving frames: random color pixels</li>
-<li>Still frames: all pixels with same color</li>
+<li>Moving frames: flipping between grey and white pixels</li>
+<li>Still frames: all black pixels</li>
 </ul></li>
 <li>Run the classifier on the pixel frames</li>
 <li>Test properties based on:
@@ -346,12 +336,12 @@ If the video track is shorter, it will be padded with still frames
 <ol type="1">
 <li>Classified still segments must be at least <em>S</em> seconds long
 <ul>
-<li>Exception: First and last segment may be shorter</li>
+<li>Ignoring the last segment (which may be a shorter still segment)</li>
 </ul></li>
 <li>Classified moving segments must have correct timespans
 <ul>
 <li>Comparing the generated <em>expected</em> output to the classified timespans</li>
-<li>Wrote this a week ago</li>
+<li>(here were bugs!)</li>
 </ul></li>
 </ol>
 </section><section id="testing-still-segment-lengths" class="slide level2">
@@ -374,26 +364,27 @@ If the video track is shorter, it will be padded with still frames
   let counted = classifyMovement 1.0 (Pipes.each pixelFrames)
                 &amp; Pipes.toList
                 &amp; countSegments
-  
+
   -- Sanity check: same number of frames
   countTestSegmentFrames segments === totalClassifiedFrames counted
 
-  -- Then ignore first and last segment, and verify all other segments
-  case dropFirstAndLast counted of
-    Just middle -&gt; traverse_ (assertStillLengthAtLeast 1.0) middle
+  -- Then ignore last segment (which can be a shorter still segment),
+  -- and verify all other segments
+  case initMay counted of
+    Just rest -&gt; traverse_ (assertStillLengthAtLeast 1.0) rest
     Nothing     -&gt; success
   where
     resolution = 10 :. 10</code></pre>
 </section><section id="success" class="slide level2">
 <h2>Success!</h2>
-<pre class="text"><code>&gt; Hedgehog.check hprop_classifies_still_segments_of_min_length 
+<pre class="text"><code>&gt; Hedgehog.check hprop_classifies_still_segments_of_min_length
   ✓ &lt;interactive&gt; passed 100 tests.</code></pre>
 </section><section id="testing-moving-segment-timespans" class="slide level2">
 <h2>Testing Moving Segment Timespans</h2>
 <pre class="haskell"><code>hprop_classifies_same_scenes_as_input = property $ do
 
   -- Generate test segments
-  segments &lt;- forAll 
+  segments &lt;- forAll
     genSegments (Range.linear (frameRate * 1) (frameRate * 5)) resolution
 
   -- Convert test segments to timespanned ones, and actual pixel frames
@@ -434,11 +425,11 @@ If the video track is shorter, it will be padded with still frames
 <li>The generators and tests had errors</li>
 <li>The implementation had errors (since its inception)</li>
 </ul></li>
-<li>Next steps:
+<li>Process:
 <ul>
-<li>Thought about the specification for a while</li>
-<li>Thought about how generators and tests should work, rewrote them</li>
-<li>Got minimal examples of failures, fixed the implementation</li>
+<li>Think about the specification first</li>
+<li>Think about how generators and tests should work, rewrite them</li>
+<li>Get minimal examples of failures, fix the implementation</li>
 </ul></li>
 <li>Thousands of tests ran successfully</li>
 <li>Tried importing actual recorded video, had great results!</li>
@@ -460,7 +451,7 @@ If the video track is shorter, it will be padded with still frames
 <h2>Testing Focus and Timeline Consistency</h2>
 <ul>
 <li>Generate a random initial state</li>
-<li>Generate a random sequence user commands</li>
+<li>Generate a random sequence of user commands</li>
 <li>Run all commands until termination
 <ul>
 <li>main control flow
@@ -487,7 +478,7 @@ If the video track is shorter, it will be padded with still frames
 
   -- And from those, the initial timeline mode state
   initialState &lt;- forAll (initializeState timelineAndFocus)
-  
+
   -- Generate a sequence of events (user commands)
   events &lt;- forAll $
     Gen.list (Range.exponential 1 500) genFocusChangingEvents
@@ -567,10 +558,10 @@ If the video track is shorter, it will be padded with still frames
   -- Generate the initial timeline and focus
   timelineAndFocus &lt;- forAllWith showTimelineAndFocus $
     Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel
-  
+
   -- Generate the initial application state
   initialState &lt;- forAll (initializeState timelineAndFocus)
-  
+
   -- Generate a sequence of undoable/redoable commands
   events &lt;- forAll $
     Gen.list (Range.exponential 1 100) genUndoableTimelineEvent</code></pre>
@@ -604,15 +595,11 @@ If the video track is shorter, it will be padded with still frames
 <section><section id="wrapping-up" class="title-slide slide level1"><h1>Wrapping Up</h1></section><section id="summary" class="slide level2">
 <h2>Summary</h2>
 <ul>
-<li>Property-based testing helps you:
+<li>Property-based testing is not only for pure functions!
 <ul>
-<li>run <em>more</em> test</li>
-<li>express <em>properties</em> of your system, rather than <em>anecdotes</em></li>
-<li>shrink down failures to <em>minimal examples</em></li>
-<li>refactor and evolve existing functionality</li>
-<li>write new functionality</li>
+<li>Effectful actions</li>
+<li>Integration tests</li>
 </ul></li>
-<li>It’s most likely available for your language of choice</li>
 <li>Using them in Komposition:
 <ul>
 <li>Made refactoring and evolving large parts of the system tractable and much more safe</li>
@@ -627,14 +614,17 @@ If the video track is shorter, it will be padded with still frames
 <li><a href="https://www.cs.tufts.edu/~nr/cs257/archive/john-hughes/quviq-testing.pdf">Experiences with QuickCheck: Testing the Hard Stuff and Staying Sane</a> by John Hughes</li>
 <li><a href="https://fsharpforfunandprofit.com/posts/property-based-testing-2/">“Choosing properties for property-based testing”</a> by Scott Wlaschin</li>
 </ul>
-</section><section id="questions" class="slide level2">
-<h2>Questions?</h2>
 </section><section id="thank-you" class="slide level2">
 <h2>Thank You!</h2>
 <ul>
+<li>“Property-Based Testing in a Screencast Editor” series:
+<ul>
+<li><a href="https://wickstrom.tech/programming/2019/03/02/property-based-testing-in-a-screencast-editor-introduction.html">Introduction</a></li>
+<li><a href="https://wickstrom.tech/programming/2019/03/24/property-based-testing-in-a-screencast-editor-case-study-1.html">Timeline Flattening</a></li>
+</ul></li>
 <li>Komposition: <a href="https://owickstrom.github.io/komposition/">owickstrom.github.io/komposition/</a></li>
 <li>Slides: <a href="https://owickstrom.github.io/property-based-testing-the-ugly-parts/">owickstrom.github.io/property-based-testing-the-ugly-parts/</a></li>
-<li>Thanks to <a href="https://twitter.com/rjmh">John Hughes</a> for great feedback!</li>
+<li>Thanks to <a href="https://twitter.com/rjmh">John Hughes</a> for feedback</li>
 <li>Image credits:
 <ul>
 <li><a href="https://knowyourmeme.com/photos/234765-i-have-no-idea-what-im-doing">I Have No Idea What I’m Doing</a></li>

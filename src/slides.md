@@ -362,10 +362,10 @@ hprop_classifies_same_scenes_as_input = property $ do
     - The specificiation was wrong
     - The generators and tests had errors
     - The implementation had errors (since its inception)
-* Next steps:
-  - Thought about the specification for a while
-  - Thought about how generators and tests should work, rewrote them
-  - Got minimal examples of failures, fixed the implementation
+* Process:
+  - Think about the specification first
+  - Think about how generators and tests should work, rewrite them
+  - Get minimal examples of failures, fix the implementation
 * Thousands of tests ran successfully
 * Tried importing actual recorded video, had great results!
 
@@ -384,7 +384,7 @@ hprop_classifies_same_scenes_as_input = property $ do
 ## Testing Focus and Timeline Consistency
 
 * Generate a random initial state
-* Generate a random sequence user commands
+* Generate a random sequence of user commands
 * Run all commands until termination
     - main control flow
       - entering/exiting modes
