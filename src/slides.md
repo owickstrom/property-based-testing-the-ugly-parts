@@ -250,10 +250,10 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 
 ## Testing Video Classification
 
-* Generate high-level representation of _expected_ output segments
-* Convert output representation to actual pixel frames
-  - Moving frames: flipping between grey and white pixels
-  - Still frames: all black pixels
+* Generate high-level representation of _expected output segments_:
+    ![Expected output](images/expected-output.png)
+* Convert output representation to actual pixel frames:
+    ![Pixel frames](images/derived-frames.png)
 * Run the classifier on the pixel frames
 * Test properties based on:
   - the expected output representation
@@ -266,20 +266,38 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 2. Classified moving segments must have correct timespans
    - Comparing the generated _expected_ output to the classified
      timespans
-   - (here were bugs!)
 
 ## Testing Still Segment Lengths
 
 ```{.haskell}
 hprop_classifies_still_segments_of_min_length = property $ do
 
-  -- Generate test segments
-  segments <- forAll $
-    genSegments (Range.linear 1 (frameRate * 2)) resolution
+  -- 1. Generate a minimum still segment length/duration
+  minStillSegmentFrames <- forAll $ Gen.int (Range.linear 2 (2 * frameRate))
+  let minStillSegmentTime = frameCountDuration minStillSegmentFrames
 
-  -- Convert test segments to actual pixel frames
+  -- 2. Generate output segments
+  segments <- forAll $
+    genSegments (Range.linear 1 10)
+                (Range.linear 1
+                              (minStillSegmentFrames * 2))
+                (Range.linear minStillSegmentFrames
+                              (minStillSegmentFrames * 2))
+                resolution
+```
+
+## Testing Still Segment Lengths (cont.)
+                
+```{.haskell}
+  ...
+
+  -- 3. Convert test segments to actual pixel frames
   let pixelFrames = testSegmentsToPixelFrames segments
 
+  -- 4. Run the classifier on the pixel frames
+  let counted = classifyMovement minStillSegmentTime (Pipes.each pixelFrames)
+                & Pipes.toList
+                & countSegments
   ...
 ```
 
@@ -288,19 +306,14 @@ hprop_classifies_still_segments_of_min_length = property $ do
 ```{.haskell}
   ...
 
-  -- Run classifier on pixel frames
-  let counted = classifyMovement 1.0 (Pipes.each pixelFrames)
-                & Pipes.toList
-                & countSegments
-
-  -- Sanity check: same number of frames
+  -- 5. Sanity check
   countTestSegmentFrames segments === totalClassifiedFrames counted
 
-  -- Then ignore last segment (which can be a shorter still segment),
-  -- and verify all other segments
+  -- 6. Ignore last segment and verify all other segments
   case initMay counted of
-    Just rest -> traverse_ (assertStillLengthAtLeast 1.0) rest
-    Nothing     -> success
+    Just rest ->
+      traverse_ (assertStillLengthAtLeast minStillSegmentTime) rest
+    Nothing -> success
   where
     resolution = 10 :. 10
 ```
@@ -308,8 +321,12 @@ hprop_classifies_still_segments_of_min_length = property $ do
 ## Success!
 
 ```{.text}
-> Hedgehog.check hprop_classifies_still_segments_of_min_length
-  ✓ <interactive> passed 100 tests.
+> :{
+| hprop_classifies_still_segments_of_min_length
+|   & Hedgehog.withTests 10000
+|   & Hedgehog.check
+| :}
+  ✓ <interactive> passed 10000 tests.
 ```
 
 ## Testing Moving Segment Timespans
@@ -317,18 +334,18 @@ hprop_classifies_still_segments_of_min_length = property $ do
 ```{.haskell}
 hprop_classifies_same_scenes_as_input = property $ do
 
-  -- Generate test segments
-  segments <- forAll
-    genSegments (Range.linear (frameRate * 1) (frameRate * 5)) resolution
+  -- 1. Generate a minimum still still segment duration
+  minStillSegmentFrames <- forAll $ Gen.int (Range.linear 2 (2 * frameRate))
+  let minStillSegmentTime = frameCountDuration minStillSegmentFrames
 
-  -- Convert test segments to timespanned ones, and actual pixel frames
-  let segmentsWithTimespans = segments
-                              & map segmentWithDuration
-                              & segmentTimeSpans
-      pixelFrames = testSegmentsToPixelFrames segments
-      fullDuration = foldMap
-                     (durationOf AdjustedDuration . unwrapSegment)
-                     segmentsWithTimespans
+  -- 2. Generate test segments
+  segments <- forAll $
+    genSegments (Range.linear 1 10)
+                (Range.linear 1
+                              (minStillSegmentFrames * 2))
+                (Range.linear minStillSegmentFrames
+                              (minStillSegmentFrames * 2))
+                resolution
 
   ...
 ```
@@ -338,18 +355,50 @@ hprop_classifies_same_scenes_as_input = property $ do
 ```{.haskell}
   ...
 
-  -- Run classifier on pixel frames
-  classified <-
-    (Pipes.each pixelFrames
-     & classifyMovement 1.0
-     & classifyMovingScenes fullDuration)
-    >-> Pipes.drain
-    & Pipes.runEffect
+  -- 3. Convert test segments to actual pixel frames
+  let pixelFrames = testSegmentsToPixelFrames segments
 
-  -- Check classified timespan equivalence
-  unwrapScenes segmentsWithTimespans === classified
+  -- 4. Convert expected output segments to a list of expected time spans
+  --    and the full duration
+  let durations = map segmentWithDuration segments
+      expectedSegments = movingSceneTimeSpans durations
+      fullDuration = foldMap unwrapSegment durations
+  
+  ...
+```
 
-  where resolution = 10 :. 10
+## Testing Moving Segment Timespans (cont.)
+
+```{.haskell}
+  ...
+
+  -- 5. Classify movement of frames
+  let classifiedFrames =
+        Pipes.each pixelFrames
+        & classifyMovement minStillSegmentTime
+        & Pipes.toList
+
+  -- 6. Classify moving scene time spans
+  let classified =
+        (Pipes.each classifiedFrames
+         & classifyMovingScenes fullDuration)
+        >-> Pipes.drain
+        & Pipes.runEffect
+        & runIdentity
+  
+  ...
+```
+
+## Testing Moving Segment Timespans (cont.)
+
+```{.haskell}
+  ...
+
+  -- 7. Check classified time span equivalence
+  expectedSegments === classified
+
+  where
+    resolution = 10 :. 10
 ```
 
 ## Failure!
@@ -362,10 +411,9 @@ hprop_classifies_same_scenes_as_input = property $ do
     - The specificiation was wrong
     - The generators and tests had errors
     - The implementation had errors (since its inception)
-* Process:
-  - Think about the specification first
-  - Think about how generators and tests should work, rewrite them
-  - Get minimal examples of failures, fix the implementation
+    
+## After Fixing Bugs
+
 * Thousands of tests ran successfully
 * Tried importing actual recorded video, had great results!
 
@@ -543,6 +591,10 @@ hprop_undo_actions_are_redoable = property $ do
 * Property-based testing is not only for pure functions!
   - Effectful actions
   - Integration tests
+* Process
+    - Think about the specification first
+    - Think about how generators and tests should work, rewrite them
+    - Get minimal examples of failures, fix the implementation
 * Using them in Komposition:
   - Made refactoring and evolving large parts of the system tractable
     and much more safe
