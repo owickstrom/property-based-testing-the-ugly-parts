@@ -403,18 +403,58 @@ hprop_classifies_same_scenes_as_input = property $ do
 
 ## Failure!
 
-![](images/video-classification-failure.png)
+![](images/video-classification-failure.png){width=75%}
 
-## What Went Wrong?
+<aside class="notes">
+* Where does 0s–0.6s come from?
+  - There's a single moving scene of 10 frames
+  - The classified time span should’ve been 0s–1s
+* I couldn’t find anything incorrect in the generated data
+* The end timestamp 0.6s was consistently showing up in failing examples
+    - Found a curious hard-coded value 0.5
+</aside>
+
+## Classifier Bugs
+
+```haskell
+classifyMovement minStillSegmentTime =
+  case ... of
+    InStillState{..} ->
+      if someDiff > minEqualTimeForStill
+        then ...
+        else ...
+    InMovingState{..} ->
+      if someOtherDiff >= minStillSegmentTime
+        then ...
+        else ...
+  where
+    minEqualTimeForStill = 0.5
+```
+
+<aside class="notes">
+* Classifier is a _fold_ over a stream of frames
+* This is a stripped down version of the code to highlight one bug:
+    - The accumulator holds vectors of previously seen and not-yet-classified frames
+    - In the `InStillState` branch it uses the value `minEqualTimeForStill`
+    - It should always use `minStillSegmentTime` argument
+* Also, it incorrectly classified frames based on that value
+  - Frames that should've been classified as "moving" ended up "still"
+  - That's why I didn't get 0s–1s in the output
+* Why not 0.5s, given the hard-coded value 0.5?
+  - There was also an off-by-one bug
+  - One frame was classified incorrectly
+* The `classifyMovement` function is 30 lines of Haskell code
+  - I messed it up in three separate ways at the same time
+  - With property tests I quickly found and fixed the bugs
+</aside>
+
+## Fixing Bugs
 
 * There were multiple bugs:
-    - The specificiation was wrong
-    - The generators and tests had errors
-    - The implementation had errors (since its inception)
-    
-## After Fixing Bugs
-
-* Thousands of tests ran successfully
+  - The specificiation was wrong
+  - The generators and tests had errors
+  - The implementation had errors
+* After fixing bugs, thousands of tests ran successfully
 * Tried importing actual recorded video, had great results!
 
 # <strong>Case Study 3:</strong> Focus and Timeline Consistency
