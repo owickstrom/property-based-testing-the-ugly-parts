@@ -457,68 +457,7 @@ classifyMovement minStillSegmentTime =
 * After fixing bugs, thousands of tests ran successfully
 * Tried importing actual recorded video, had great results!
 
-# <strong>Case Study 3:</strong> Focus and Timeline Consistency
-
-## Focus and Timeline
-
-* The _focus_ is a data structure that "points" to a part of the
-  timeline
-* The timeline and focus must at all points be consistent
-* User commands can:
-  - alter the timeline
-  - alter the focus
-* Undo/redo complicates things
-
-## Testing Focus and Timeline Consistency
-
-* Generate a random initial state
-* Generate a random sequence of user commands
-* Run all commands until termination
-    - main control flow
-      - entering/exiting modes
-    - state
-    - event handling (stubbed)
-    - effects (stubbed)
-* Assert that the focus and timeline are consistent
-  - Checking that "get the focused part" returns something
-
-## Focus and Timeline Property Test
-
-
-```{.haskell}
-hprop_focus_never_goes_invalid = property $ do
-
-  -- Generate the initial timeline and focus
-  timelineAndFocus <- forAllWith
-    showTimelineAndFocus
-    (Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel)
-
-  -- And from those, the initial timeline mode state
-  initialState <- forAll (initializeState timelineAndFocus)
-
-  -- Generate a sequence of events (user commands)
-  events <- forAll $
-    Gen.list (Range.exponential 1 500) genFocusChangingEvents
-
-  ...
-```
-
-## Focus and Timeline Property Test (cont.)
-
-
-```{.haskell}
-  ...
-
-  -- Run all the user commands (wrapped in events)
-  endState <- runTimelineStubbedWithExit (concat events) initialState
-
-  -- Check that the focus points to something in the timeline
-  assert . isJust $ atFocus
-    (endState ^. existingProject.project.timelineFocus)
-    (endState ^. existingProject.project.timeline.UndoRedo.current)
-```
-
-# <strong>Case Study 4:</strong> Undo/Redo Symmetry
+# <strong>Case Study 3:</strong> Integration Testing
 
 ## Undo/Redo Symmetry
 
@@ -624,6 +563,18 @@ hprop_undo_actions_are_redoable = property $ do
   - Non-invertible actions
 * After the tests passed: ran the GUI, it worked
 
+## Related Tests
+
+* Focus and Timeline Consistency
+    - The _focus_ is a data structure that "points" to a part of the
+    timeline
+    - The timeline and focus must at all points be consistent
+    - Approach:
+      - Generate a random initial state
+      - Generate a random sequence of user commands
+      - Check consistency after each command
+      - Run all commands until termination
+
 # Wrapping Up
 
 ## Summary
@@ -631,13 +582,13 @@ hprop_undo_actions_are_redoable = property $ do
 * Property-based testing is not only for pure functions!
   - Effectful actions
   - Integration tests
-* Process
+* Process (iterative)
     - Think about the specification first
-    - Think about how generators and tests should work, rewrite them
+    - Think about how generators and tests should work
     - Get minimal examples of failures, fix the implementation
 * Using them in Komposition:
   - Made refactoring and evolving large parts of the system tractable
-    and much more safe
+    and safer
   - Found existing errors in my thinking, my tests, my implementation
   - It's been a joy
 
@@ -652,6 +603,7 @@ hprop_undo_actions_are_redoable = property $ do
 - "Property-Based Testing in a Screencast Editor" series:
   - [Introduction](https://wickstrom.tech/programming/2019/03/02/property-based-testing-in-a-screencast-editor-introduction.html)
   - [Timeline Flattening](https://wickstrom.tech/programming/2019/03/24/property-based-testing-in-a-screencast-editor-case-study-1.html)
+  - [Video Scene Classification](https://wickstrom.tech/programming/2019/04/17/property-based-testing-in-a-screencast-editor-case-study-2.html)
 - Komposition: [owickstrom.github.io/komposition/](https://owickstrom.github.io/komposition/)
 - Slides: [owickstrom.github.io/property-based-testing-the-ugly-parts/](https://owickstrom.github.io/property-based-testing-the-ugly-parts/)
 - Thanks to [John Hughes](https://twitter.com/rjmh) for feedback
