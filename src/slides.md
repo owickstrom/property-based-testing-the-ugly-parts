@@ -111,7 +111,6 @@ How many of you write sort algorithms in your day job?
     - Clips and gaps
 - Automatic scene classification
 - Automatic sentence classification
-- Keyboard-driven editing workflow
     </td>
     <td width="50%">
 ![Komposition](images/komposition-light.png)
@@ -132,8 +131,7 @@ How many of you write sort algorithms in your day job?
 
 1. Timeline Flattening
 2. Video Scene Classification
-3. Focus and Timeline Consistency
-4. Undo/Redo Symmetry
+3. Undo/Redo Symmetry
 
 # Hierarchical Timeline{background=#dddddd}
 
