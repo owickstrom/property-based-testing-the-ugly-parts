@@ -1,7 +1,7 @@
 ---
 title: Property-Based Testing the Ugly Parts
 author: Oskar Wickström
-date: February 2019
+date: May 2019
 theme: Boadilla
 classoption: dvipsnames
 ---
