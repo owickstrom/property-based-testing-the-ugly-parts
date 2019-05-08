@@ -111,7 +111,20 @@ How many of you write sort algorithms in your day job?
   - No global side-effects
   - Low coupling between interface and implementation
 
-## Patterns for Properties
+<aside class="notes">
+- The regular guidelines for testable code apply
+- Have each component under test do **one thing**
+- Make it possible to run **deterministacally**
+  - Stubbing out service calls
+  - Controlling clocks and generator seeds
+  - Otherwise parameterizing the component
+- Isolate side-effects in tests
+  - Separate database transactions and rollback
+  - Pass a temporary directories argument
+- (It's still hard to come up properties...)
+</aside>
+
+## Coming Up With Properties
 
 - ["Choosing properties for property-based testing"](https://fsharpforfunandprofit.com/posts/property-based-testing-2/) by Scott Wlaschin
   - "Different paths, same destination"
@@ -124,11 +137,30 @@ How many of you write sort algorithms in your day job?
 - Study others' property tests
 - Practice!
 
+<aside class="notes">
+- This article lists general patterns for properties
+  - Try to apply them in your testing
+- Find libraries and applications that use property tests
+- **Practice!**
+  - Involve your colleauges
+  - Challange yourselves to improve tests
+  - Learn how to express product requirements as properties
+- (There are related techniques I won't cover today...)
+</aside>
+
 ## Other Interesting Techniques
 
 * State-machine testing
 * "Database of inputs"
   - [Testing Our Ruby and Haskell Implementations Side-By-Side](https://blog.mpowered.team/posts/2018-testing-ruby-haskell-implementations.html)
+
+<aside class="notes">
+- State-machine or model-based testing
+- Database of inputs:
+  - Also property-based, but not using generated data
+  - Check out this article
+- (Let's start looking at the case studies.)
+</aside>
 
 # Case Studies from Komposition{.dark background=images/komposition-bg.png}
 
@@ -166,7 +198,12 @@ How many of you write sort algorithms in your day job?
 
 1. Timeline Flattening
 2. Video Scene Classification
-3. Undo/Redo Symmetry
+3. Integration Tests (Undo/Redo Symmetry)
+
+<aside class="notes">
+- This talk will cover 3 case studies
+- (Before we can look at timeline flattening, I need to explain ...)
+</aside>
 
 # Hierarchical Timeline{background=#dddddd}
 
@@ -229,9 +266,21 @@ If the video track is shorter, it will be padded with still frames
   - Video track
   - Audio track
 
+<aside class="notes">
+- (We need to flatten the hierarchical timeline into a video and audio track)
+</aside>
+
 ## Timeline Flattening (Graphical)
 
 ![Timeline flattening](images/komposition-flattening.png){width=100%}
+
+<aside class="notes">
+- This is an graphical example of the flattening process
+- Notice how gaps are explictly added in the flat timeline
+  - Otherwise we'd get incorrect offsetting
+- This process also decides what frames are used to pad gaps
+- (How do we write property tests for this? One thing we can test...)
+</aside>
 
 ## Testing Duration
 
@@ -242,6 +291,10 @@ hprop_flat_timeline_has_same_duration_as_hierarchical =
     let Just flat = Render.flattenTimeline t
     durationOf AdjustedDuration t === durationOf AdjustedDuration flat
 ````
+
+<aside class="notes">
+- (We can also test that no clips are lost or duplicated...)
+</aside>
 
 ## Testing Clip Occurence
 
@@ -259,10 +312,10 @@ hprop_flat_timeline_has_same_clips_as_hierarchical =
 * Other properties
   - How video gaps are padded with still frames
   - Same flat result regardless of grouping (split/join sequences, then flatten)
-* Padding with frames from other parallels
-  - Frames are only picked from video clips within the parallel
-  - Should pick from _any_ video clip within the timeline
-  - Write properties to guide my work
+
+<aside class="notes">
+- (This was a show case of testing a pure function with some complexity. Let's look at something harder...)
+</aside>
 
 # <strong>Case Study 2:</strong> Video Scene Classification
 

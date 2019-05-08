@@ -169,8 +169,26 @@
 <li>Low coupling between interface and implementation</li>
 </ul></li>
 </ul>
-</section><section id="patterns-for-properties" class="slide level2">
-<h2>Patterns for Properties</h2>
+<aside class="notes">
+<ul>
+<li>The regular guidelines for testable code apply</li>
+<li>Have each component under test do <strong>one thing</strong></li>
+<li>Make it possible to run <strong>deterministacally</strong>
+<ul>
+<li>Stubbing out service calls</li>
+<li>Controlling clocks and generator seeds</li>
+<li>Otherwise parameterizing the component</li>
+</ul></li>
+<li>Isolate side-effects in tests
+<ul>
+<li>Separate database transactions and rollback</li>
+<li>Pass a temporary directories argument</li>
+</ul></li>
+<li>(It’s still hard to come up properties…)</li>
+</ul>
+</aside>
+</section><section id="coming-up-with-properties" class="slide level2">
+<h2>Coming Up With Properties</h2>
 <ul>
 <li><a href="https://fsharpforfunandprofit.com/posts/property-based-testing-2/">“Choosing properties for property-based testing”</a> by Scott Wlaschin
 <ul>
@@ -185,6 +203,22 @@
 <li>Study others’ property tests</li>
 <li>Practice!</li>
 </ul>
+<aside class="notes">
+<ul>
+<li>This article lists general patterns for properties
+<ul>
+<li>Try to apply them in your testing</li>
+</ul></li>
+<li>Find libraries and applications that use property tests</li>
+<li><strong>Practice!</strong>
+<ul>
+<li>Involve your colleauges</li>
+<li>Challange yourselves to improve tests</li>
+<li>Learn how to express product requirements as properties</li>
+</ul></li>
+<li>(There are related techniques I won’t cover today…)</li>
+</ul>
+</aside>
 </section><section id="other-interesting-techniques" class="slide level2">
 <h2>Other Interesting Techniques</h2>
 <ul>
@@ -194,6 +228,17 @@
 <li><a href="https://blog.mpowered.team/posts/2018-testing-ruby-haskell-implementations.html">Testing Our Ruby and Haskell Implementations Side-By-Side</a></li>
 </ul></li>
 </ul>
+<aside class="notes">
+<ul>
+<li>State-machine or model-based testing</li>
+<li>Database of inputs:
+<ul>
+<li>Also property-based, but not using generated data</li>
+<li>Check out this article</li>
+</ul></li>
+<li>(Let’s start looking at the case studies.)</li>
+</ul>
+</aside>
 </section></section>
 <section><section id="case-studies-from-komposition" class="title-slide slide level1 dark" data-background="images/komposition-bg.png"><h1>Case Studies from Komposition</h1></section><section id="komposition" class="slide level2">
 <h2>Komposition</h2>
@@ -236,8 +281,14 @@
 <ol type="1">
 <li>Timeline Flattening</li>
 <li>Video Scene Classification</li>
-<li>Undo/Redo Symmetry</li>
+<li>Integration Tests (Undo/Redo Symmetry)</li>
 </ol>
+<aside class="notes">
+<ul>
+<li>This talk will cover 3 case studies</li>
+<li>(Before we can look at timeline flattening, I need to explain …)</li>
+</ul>
+</aside>
 </section></section>
 <section><section id="hierarchical-timeline" class="title-slide slide level1" data-background="#dddddd"><h1>Hierarchical Timeline</h1></section><section id="clips" class="slide level2">
 <h2>Clips</h2>
@@ -300,9 +351,25 @@ If the video track is shorter, it will be padded with still frames
 <li>Audio track</li>
 </ul></li>
 </ul>
+<aside class="notes">
+<ul>
+<li>(We need to flatten the hierarchical timeline into a video and audio track)</li>
+</ul>
+</aside>
 </section><section id="timeline-flattening-graphical" class="slide level2">
 <h2>Timeline Flattening (Graphical)</h2>
 <p><img data-src="images/komposition-flattening.png" alt="Timeline flattening" style="width:100.0%" /></p>
+<aside class="notes">
+<ul>
+<li>This is an graphical example of the flattening process</li>
+<li>Notice how gaps are explictly added in the flat timeline
+<ul>
+<li>Otherwise we’d get incorrect offsetting</li>
+</ul></li>
+<li>This process also decides what frames are used to pad gaps</li>
+<li>(How do we write property tests for this? One thing we can test…)</li>
+</ul>
+</aside>
 </section><section id="testing-duration" class="slide level2">
 <h2>Testing Duration</h2>
 <pre class="haskell"><code>hprop_flat_timeline_has_same_duration_as_hierarchical =
@@ -310,6 +377,11 @@ If the video track is shorter, it will be padded with still frames
     t &lt;- forAll $ Gen.timeline (Range.exponential 0 20) Gen.parallelWithClips
     let Just flat = Render.flattenTimeline t
     <mark class="inline">durationOf AdjustedDuration t === durationOf AdjustedDuration flat</mark></code></pre>
+<aside class="notes">
+<ul>
+<li>(We can also test that no clips are lost or duplicated…)</li>
+</ul>
+</aside>
 </section><section id="testing-clip-occurence" class="slide level2">
 <h2>Testing Clip Occurence</h2>
 <pre class="haskell"><code>hprop_flat_timeline_has_same_clips_as_hierarchical =
@@ -326,13 +398,12 @@ If the video track is shorter, it will be padded with still frames
 <li>How video gaps are padded with still frames</li>
 <li>Same flat result regardless of grouping (split/join sequences, then flatten)</li>
 </ul></li>
-<li>Padding with frames from other parallels
-<ul>
-<li>Frames are only picked from video clips within the parallel</li>
-<li>Should pick from <em>any</em> video clip within the timeline</li>
-<li>Write properties to guide my work</li>
-</ul></li>
 </ul>
+<aside class="notes">
+<ul>
+<li>(This was a show case of testing a pure function with some complexity. Let’s look at something harder…)</li>
+</ul>
+</aside>
 </section></section>
 <section><section id="case-study-2-video-scene-classification" class="title-slide slide level1"><h1><strong>Case Study 2:</strong> Video Scene Classification</h1></section><section id="video-scene-classification" class="slide level2">
 <h2>Video Scene Classification</h2>
