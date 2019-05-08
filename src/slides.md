@@ -30,25 +30,48 @@ classoption: dvipsnames
 * Great error reporting
 * Concurrent test execution
 * Generators as values
-    - Unlike `Arbitrary` in QuickCheck
 
 ## List Reverse with Hedgehog
 
 ```{.haskell include=src/examples/Examples.hs snippet=reverse}
 ```
 
+<aside class="notes">
+- Classic example of a property test
+- Reversing a list twice
+- For all lists of length ...
+</aside>
+
 ## List Sort with Hedgehog
 
 ```{.haskell include=src/examples/Examples.hs snippet=sort}
 ```
 
+<aside class="notes">
+- Here's a property using an oracle
+- If we get a failure Hedgehog shows us...
+</aside>
+
 ## Failures
 
 ![](images/diff.png)
 
+<aside class="notes">
+- The number of tests and times it shrunk the example
+- The generated value under the generator
+- Where the assertion failed
+- The difference between the values (works on large structures)
+- How to reproduce this example
+- (How many of you ...?)
+</aside>
+
 ## Poll
 
 How many of you write sort algorithms in your day job?
+
+<aside class="notes">
+- (What if you're ...)
+</aside>
 
 ## How do I use this in my job?
 
@@ -57,7 +80,11 @@ How many of you write sort algorithms in your day job?
   * Frontends with GUIs and user input?
   * Data pipelines and analytics?
 * Hard to write properties
-* Fewer examples
+* Fewer examples online
+
+<aside class="notes">
+- (Let's see if we can apply property-based testing in our day jobs...)
+</aside>
 
 # Property-Based Testing for the Industry Programmer{.dark background=images/dog.jpg}
 
@@ -67,6 +94,14 @@ How many of you write sort algorithms in your day job?
 * Complex interactions between larger modules
 * Stateful
 * Side-effects
+
+<aside class="notes">
+- Not everything ...
+- Many modules together form complex behavior and large state spaces
+- We often have state: databases, external services, filesystems, global variables
+- Non-determinism: randomness, time
+- (How do we test this stuff?)
+</aside>
 
 ## Designing for Testability
 
