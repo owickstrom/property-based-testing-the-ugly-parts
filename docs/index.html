@@ -40,7 +40,7 @@
 <section id="title-slide">
   <h1 class="title">Property-Based Testing the Ugly Parts</h1>
   <p class="author">Oskar Wickström</p>
-  <p class="date">February 2019</p>
+  <p class="date">May 2019</p>
 </section>
 
 <section id="about-me" class="slide level2">
@@ -69,10 +69,7 @@
 <li>Integrated shrinking</li>
 <li>Great error reporting</li>
 <li>Concurrent test execution</li>
-<li>Generators as values
-<ul>
-<li>Unlike <code>Arbitrary</code> in QuickCheck</li>
-</ul></li>
+<li>Generators as values</li>
 </ul>
 </section><section id="list-reverse-with-hedgehog" class="slide level2">
 <h2>List Reverse with Hedgehog</h2>
@@ -83,6 +80,13 @@
     (Gen.int Range.linearBounded)
   reverse (reverse xs) === xs
 </code></pre>
+<aside class="notes">
+<ul>
+<li>Classic example of a property test</li>
+<li>Reversing a list twice</li>
+<li>For all lists of length …</li>
+</ul>
+</aside>
 </section><section id="list-sort-with-hedgehog" class="slide level2">
 <h2>List Sort with Hedgehog</h2>
 <pre class="haskell"><code>prop_sort = property $ do
@@ -92,12 +96,33 @@
     (Gen.int Range.linearBounded)
   mySuperSort xs === industryStandardSort xs
 </code></pre>
+<aside class="notes">
+<ul>
+<li>Here’s a property using an oracle</li>
+<li>If we get a failure Hedgehog shows us…</li>
+</ul>
+</aside>
 </section><section id="failures" class="slide level2">
 <h2>Failures</h2>
 <p><img data-src="images/diff.png" /></p>
+<aside class="notes">
+<ul>
+<li>The number of tests and times it shrunk the example</li>
+<li>The generated value under the generator</li>
+<li>Where the assertion failed</li>
+<li>The difference between the values (works on large structures)</li>
+<li>How to reproduce this example</li>
+<li>(How many of you …?)</li>
+</ul>
+</aside>
 </section><section id="poll" class="slide level2">
 <h2>Poll</h2>
 <p>How many of you write sort algorithms in your day job?</p>
+<aside class="notes">
+<ul>
+<li>(What if you’re …)</li>
+</ul>
+</aside>
 </section><section id="how-do-i-use-this-in-my-job" class="slide level2">
 <h2>How do I use this in my job?</h2>
 <ul>
@@ -108,8 +133,13 @@
 <li>Data pipelines and analytics?</li>
 </ul></li>
 <li>Hard to write properties</li>
-<li>Fewer examples</li>
+<li>Fewer examples online</li>
 </ul>
+<aside class="notes">
+<ul>
+<li>(Let’s see if we can apply property-based testing in our day jobs…)</li>
+</ul>
+</aside>
 </section></section>
 <section><section id="property-based-testing-for-the-industry-programmer" class="title-slide slide level1 dark" data-background="images/dog.jpg"><h1>Property-Based Testing for the Industry Programmer</h1></section><section id="testing-the-ugly-parts" class="slide level2">
 <h2>Testing the “Ugly” Parts</h2>
@@ -119,6 +149,15 @@
 <li>Stateful</li>
 <li>Side-effects</li>
 </ul>
+<aside class="notes">
+<ul>
+<li>Not everything …</li>
+<li>Many modules together form complex behavior and large state spaces</li>
+<li>We often have state: databases, external services, filesystems, global variables</li>
+<li>Non-determinism: randomness, time</li>
+<li>(How do we test this stuff?)</li>
+</ul>
+</aside>
 </section><section id="designing-for-testability" class="slide level2">
 <h2>Designing for Testability</h2>
 <ul>
@@ -172,8 +211,7 @@
 <li>Clips and gaps</li>
 </ul></li>
 <li>Automatic scene classification</li>
-<li>Automatic sentence classification</li>
-<li>Keyboard-driven editing workflow
+<li>Automatic sentence classification
 </td>
 <td width="50%">
 <img data-src="images/komposition-light.png" alt="Komposition" />
@@ -198,7 +236,6 @@
 <ol type="1">
 <li>Timeline Flattening</li>
 <li>Video Scene Classification</li>
-<li>Focus and Timeline Consistency</li>
 <li>Undo/Redo Symmetry</li>
 </ol>
 </section></section>
@@ -318,12 +355,8 @@ If the video track is shorter, it will be padded with still frames
 </section><section id="testing-video-classification" class="slide level2">
 <h2>Testing Video Classification</h2>
 <ul>
-<li>Generate high-level representation of <em>expected</em> output segments</li>
-<li>Convert output representation to actual pixel frames
-<ul>
-<li>Moving frames: flipping between grey and white pixels</li>
-<li>Still frames: all black pixels</li>
-</ul></li>
+<li>Generate high-level representation of <em>expected output segments</em>: <img data-src="images/expected-output.png" alt="Expected output" /></li>
+<li>Convert output representation to actual pixel frames: <img data-src="images/derived-frames.png" alt="Pixel frames" /></li>
 <li>Run the classifier on the pixel frames</li>
 <li>Test properties based on:
 <ul>
@@ -341,162 +374,189 @@ If the video track is shorter, it will be padded with still frames
 <li>Classified moving segments must have correct timespans
 <ul>
 <li>Comparing the generated <em>expected</em> output to the classified timespans</li>
-<li>(here were bugs!)</li>
 </ul></li>
 </ol>
 </section><section id="testing-still-segment-lengths" class="slide level2">
 <h2>Testing Still Segment Lengths</h2>
 <pre class="haskell"><code>hprop_classifies_still_segments_of_min_length = property $ do
 
-  -- Generate test segments
+  -- 1. Generate a minimum still segment length/duration
+  minStillSegmentFrames &lt;- forAll $ Gen.int (Range.linear 2 (2 * frameRate))
+  let minStillSegmentTime = frameCountDuration minStillSegmentFrames
+
+  -- 2. Generate output segments
   segments &lt;- forAll $
-    genSegments (Range.linear 1 (frameRate * 2)) resolution
-
-  -- Convert test segments to actual pixel frames
-  let pixelFrames = testSegmentsToPixelFrames segments
-
-  ...</code></pre>
+    genSegments (Range.linear 1 10)
+                (Range.linear 1
+                              (minStillSegmentFrames * 2))
+                (Range.linear minStillSegmentFrames
+                              (minStillSegmentFrames * 2))
+                resolution</code></pre>
 </section><section id="testing-still-segment-lengths-cont." class="slide level2">
 <h2>Testing Still Segment Lengths (cont.)</h2>
 <pre class="haskell"><code>  ...
 
-  -- Run classifier on pixel frames
-  let counted = classifyMovement 1.0 (Pipes.each pixelFrames)
+  -- 3. Convert test segments to actual pixel frames
+  let pixelFrames = testSegmentsToPixelFrames segments
+
+  -- 4. Run the classifier on the pixel frames
+  let counted = classifyMovement minStillSegmentTime (Pipes.each pixelFrames)
                 &amp; Pipes.toList
                 &amp; countSegments
+  ...</code></pre>
+</section><section id="testing-still-segment-lengths-cont.-1" class="slide level2">
+<h2>Testing Still Segment Lengths (cont.)</h2>
+<pre class="haskell"><code>  ...
 
-  -- Sanity check: same number of frames
+  -- 5. Sanity check
   countTestSegmentFrames segments === totalClassifiedFrames counted
 
-  -- Then ignore last segment (which can be a shorter still segment),
-  -- and verify all other segments
+  -- 6. Ignore last segment and verify all other segments
   case initMay counted of
-    Just rest -&gt; traverse_ (assertStillLengthAtLeast 1.0) rest
-    Nothing     -&gt; success
+    Just rest -&gt;
+      traverse_ (assertStillLengthAtLeast minStillSegmentTime) rest
+    Nothing -&gt; success
   where
     resolution = 10 :. 10</code></pre>
 </section><section id="success" class="slide level2">
 <h2>Success!</h2>
-<pre class="text"><code>&gt; Hedgehog.check hprop_classifies_still_segments_of_min_length
-  ✓ &lt;interactive&gt; passed 100 tests.</code></pre>
+<pre class="text"><code>&gt; :{
+| hprop_classifies_still_segments_of_min_length
+|   &amp; Hedgehog.withTests 10000
+|   &amp; Hedgehog.check
+| :}
+  ✓ &lt;interactive&gt; passed 10000 tests.</code></pre>
 </section><section id="testing-moving-segment-timespans" class="slide level2">
 <h2>Testing Moving Segment Timespans</h2>
 <pre class="haskell"><code>hprop_classifies_same_scenes_as_input = property $ do
 
-  -- Generate test segments
-  segments &lt;- forAll
-    genSegments (Range.linear (frameRate * 1) (frameRate * 5)) resolution
+  -- 1. Generate a minimum still still segment duration
+  minStillSegmentFrames &lt;- forAll $ Gen.int (Range.linear 2 (2 * frameRate))
+  let minStillSegmentTime = frameCountDuration minStillSegmentFrames
 
-  -- Convert test segments to timespanned ones, and actual pixel frames
-  let segmentsWithTimespans = segments
-                              &amp; map segmentWithDuration
-                              &amp; segmentTimeSpans
-      pixelFrames = testSegmentsToPixelFrames segments
-      fullDuration = foldMap
-                     (durationOf AdjustedDuration . unwrapSegment)
-                     segmentsWithTimespans
+  -- 2. Generate test segments
+  segments &lt;- forAll $
+    genSegments (Range.linear 1 10)
+                (Range.linear 1
+                              (minStillSegmentFrames * 2))
+                (Range.linear minStillSegmentFrames
+                              (minStillSegmentFrames * 2))
+                resolution
 
   ...</code></pre>
 </section><section id="testing-moving-segment-timespans-cont." class="slide level2">
 <h2>Testing Moving Segment Timespans (cont.)</h2>
 <pre class="haskell"><code>  ...
 
-  -- Run classifier on pixel frames
-  classified &lt;-
-    (Pipes.each pixelFrames
-     &amp; classifyMovement 1.0
-     &amp; classifyMovingScenes fullDuration)
-    &gt;-&gt; Pipes.drain
-    &amp; Pipes.runEffect
+  -- 3. Convert test segments to actual pixel frames
+  let pixelFrames = testSegmentsToPixelFrames segments
 
-  -- Check classified timespan equivalence
-  unwrapScenes segmentsWithTimespans === classified
+  -- 4. Convert expected output segments to a list of expected time spans
+  --    and the full duration
+  let durations = map segmentWithDuration segments
+      expectedSegments = movingSceneTimeSpans durations
+      fullDuration = foldMap unwrapSegment durations
+  
+  ...</code></pre>
+</section><section id="testing-moving-segment-timespans-cont.-1" class="slide level2">
+<h2>Testing Moving Segment Timespans (cont.)</h2>
+<pre class="haskell"><code>  ...
 
-  where resolution = 10 :. 10</code></pre>
+  -- 5. Classify movement of frames
+  let classifiedFrames =
+        Pipes.each pixelFrames
+        &amp; classifyMovement minStillSegmentTime
+        &amp; Pipes.toList
+
+  -- 6. Classify moving scene time spans
+  let classified =
+        (Pipes.each classifiedFrames
+         &amp; classifyMovingScenes fullDuration)
+        &gt;-&gt; Pipes.drain
+        &amp; Pipes.runEffect
+        &amp; runIdentity
+  
+  ...</code></pre>
+</section><section id="testing-moving-segment-timespans-cont.-2" class="slide level2">
+<h2>Testing Moving Segment Timespans (cont.)</h2>
+<pre class="haskell"><code>  ...
+
+  -- 7. Check classified time span equivalence
+  expectedSegments === classified
+
+  where
+    resolution = 10 :. 10</code></pre>
 </section><section id="failure" class="slide level2">
 <h2>Failure!</h2>
-<p><img data-src="images/video-classification-failure.png" /></p>
-</section><section id="what-went-wrong" class="slide level2">
-<h2>What Went Wrong?</h2>
+<p><img data-src="images/video-classification-failure.png" style="width:75.0%" /></p>
+<aside class="notes">
+<ul>
+<li>Where does 0s–0.6s come from?
+<ul>
+<li>There’s a single moving scene of 10 frames</li>
+<li>The classified time span should’ve been 0s–1s</li>
+</ul></li>
+<li>I couldn’t find anything incorrect in the generated data</li>
+<li>The end timestamp 0.6s was consistently showing up in failing examples
+<ul>
+<li>Found a curious hard-coded value 0.5</li>
+</ul></li>
+</ul>
+</aside>
+</section><section id="classifier-bugs" class="slide level2">
+<h2>Classifier Bugs</h2>
+<pre class="haskell"><code>classifyMovement minStillSegmentTime =
+  case ... of
+    InStillState{..} -&gt;
+      if someDiff &gt; minEqualTimeForStill
+        then ...
+        else ...
+    InMovingState{..} -&gt;
+      if someOtherDiff &gt;= minStillSegmentTime
+        then ...
+        else ...
+  where
+    minEqualTimeForStill = 0.5</code></pre>
+<aside class="notes">
+<ul>
+<li>Classifier is a <em>fold</em> over a stream of frames</li>
+<li>This is a stripped down version of the code to highlight one bug:
+<ul>
+<li>The accumulator holds vectors of previously seen and not-yet-classified frames</li>
+<li>In the <code>InStillState</code> branch it uses the value <code>minEqualTimeForStill</code></li>
+<li>It should always use <code>minStillSegmentTime</code> argument</li>
+</ul></li>
+<li>Also, it incorrectly classified frames based on that value
+<ul>
+<li>Frames that should’ve been classified as “moving” ended up “still”</li>
+<li>That’s why I didn’t get 0s–1s in the output</li>
+</ul></li>
+<li>Why not 0.5s, given the hard-coded value 0.5?
+<ul>
+<li>There was also an off-by-one bug</li>
+<li>One frame was classified incorrectly</li>
+</ul></li>
+<li>The <code>classifyMovement</code> function is 30 lines of Haskell code
+<ul>
+<li>I messed it up in three separate ways at the same time</li>
+<li>With property tests I quickly found and fixed the bugs</li>
+</ul></li>
+</ul>
+</aside>
+</section><section id="fixing-bugs" class="slide level2">
+<h2>Fixing Bugs</h2>
 <ul>
 <li>There were multiple bugs:
 <ul>
 <li>The specificiation was wrong</li>
 <li>The generators and tests had errors</li>
-<li>The implementation had errors (since its inception)</li>
+<li>The implementation had errors</li>
 </ul></li>
-<li>Process:
-<ul>
-<li>Think about the specification first</li>
-<li>Think about how generators and tests should work, rewrite them</li>
-<li>Get minimal examples of failures, fix the implementation</li>
-</ul></li>
-<li>Thousands of tests ran successfully</li>
+<li>After fixing bugs, thousands of tests ran successfully</li>
 <li>Tried importing actual recorded video, had great results!</li>
 </ul>
 </section></section>
-<section><section id="case-study-3-focus-and-timeline-consistency" class="title-slide slide level1"><h1><strong>Case Study 3:</strong> Focus and Timeline Consistency</h1></section><section id="focus-and-timeline" class="slide level2">
-<h2>Focus and Timeline</h2>
-<ul>
-<li>The <em>focus</em> is a data structure that “points” to a part of the timeline</li>
-<li>The timeline and focus must at all points be consistent</li>
-<li>User commands can:
-<ul>
-<li>alter the timeline</li>
-<li>alter the focus</li>
-</ul></li>
-<li>Undo/redo complicates things</li>
-</ul>
-</section><section id="testing-focus-and-timeline-consistency" class="slide level2">
-<h2>Testing Focus and Timeline Consistency</h2>
-<ul>
-<li>Generate a random initial state</li>
-<li>Generate a random sequence of user commands</li>
-<li>Run all commands until termination
-<ul>
-<li>main control flow
-<ul>
-<li>entering/exiting modes</li>
-</ul></li>
-<li>state</li>
-<li>event handling (stubbed)</li>
-<li>effects (stubbed)</li>
-</ul></li>
-<li>Assert that the focus and timeline are consistent
-<ul>
-<li>Checking that “get the focused part” returns something</li>
-</ul></li>
-</ul>
-</section><section id="focus-and-timeline-property-test" class="slide level2">
-<h2>Focus and Timeline Property Test</h2>
-<pre class="haskell"><code>hprop_focus_never_goes_invalid = property $ do
-
-  -- Generate the initial timeline and focus
-  timelineAndFocus &lt;- forAllWith
-    showTimelineAndFocus
-    (Gen.timelineWithFocus (Range.linear 0 10) Gen.parallel)
-
-  -- And from those, the initial timeline mode state
-  initialState &lt;- forAll (initializeState timelineAndFocus)
-
-  -- Generate a sequence of events (user commands)
-  events &lt;- forAll $
-    Gen.list (Range.exponential 1 500) genFocusChangingEvents
-
-  ...</code></pre>
-</section><section id="focus-and-timeline-property-test-cont." class="slide level2">
-<h2>Focus and Timeline Property Test (cont.)</h2>
-<pre class="haskell"><code>  ...
-
-  -- Run all the user commands (wrapped in events)
-  endState &lt;- runTimelineStubbedWithExit (concat events) initialState
-
-  -- Check that the focus points to something in the timeline
-  assert . isJust $ atFocus
-    (endState ^. existingProject.project.timelineFocus)
-    (endState ^. existingProject.project.timeline.UndoRedo.current)</code></pre>
-</section></section>
-<section><section id="case-study-4-undoredo-symmetry" class="title-slide slide level1"><h1><strong>Case Study 4:</strong> Undo/Redo Symmetry</h1></section><section id="undoredo-symmetry" class="slide level2">
+<section><section id="case-study-3-integration-testing" class="title-slide slide level1"><h1><strong>Case Study 3:</strong> Integration Testing</h1></section><section id="undoredo-symmetry" class="slide level2">
 <h2>Undo/Redo Symmetry</h2>
 <ul>
 <li>Undo/Redo was previously implemented as stacks of previous/future states</li>
@@ -591,6 +651,22 @@ If the video track is shorter, it will be padded with still frames
 </ul></li>
 <li>After the tests passed: ran the GUI, it worked</li>
 </ul>
+</section><section id="related-tests" class="slide level2">
+<h2>Related Tests</h2>
+<ul>
+<li>Focus and Timeline Consistency
+<ul>
+<li>The <em>focus</em> is a data structure that “points” to a part of the timeline</li>
+<li>The timeline and focus must at all points be consistent</li>
+<li>Approach:
+<ul>
+<li>Generate a random initial state</li>
+<li>Generate a random sequence of user commands</li>
+<li>Check consistency after each command</li>
+<li>Run all commands until termination</li>
+</ul></li>
+</ul></li>
+</ul>
 </section></section>
 <section><section id="wrapping-up" class="title-slide slide level1"><h1>Wrapping Up</h1></section><section id="summary" class="slide level2">
 <h2>Summary</h2>
@@ -600,9 +676,15 @@ If the video track is shorter, it will be padded with still frames
 <li>Effectful actions</li>
 <li>Integration tests</li>
 </ul></li>
+<li>Process (iterative)
+<ul>
+<li>Think about the specification first</li>
+<li>Think about how generators and tests should work</li>
+<li>Get minimal examples of failures, fix the implementation</li>
+</ul></li>
 <li>Using them in Komposition:
 <ul>
-<li>Made refactoring and evolving large parts of the system tractable and much more safe</li>
+<li>Made refactoring and evolving large parts of the system tractable and safer</li>
 <li>Found existing errors in my thinking, my tests, my implementation</li>
 <li>It’s been a joy</li>
 </ul></li>
@@ -621,6 +703,7 @@ If the video track is shorter, it will be padded with still frames
 <ul>
 <li><a href="https://wickstrom.tech/programming/2019/03/02/property-based-testing-in-a-screencast-editor-introduction.html">Introduction</a></li>
 <li><a href="https://wickstrom.tech/programming/2019/03/24/property-based-testing-in-a-screencast-editor-case-study-1.html">Timeline Flattening</a></li>
+<li><a href="https://wickstrom.tech/programming/2019/04/17/property-based-testing-in-a-screencast-editor-case-study-2.html">Video Scene Classification</a></li>
 </ul></li>
 <li>Komposition: <a href="https://owickstrom.github.io/komposition/">owickstrom.github.io/komposition/</a></li>
 <li>Slides: <a href="https://owickstrom.github.io/property-based-testing-the-ugly-parts/">owickstrom.github.io/property-based-testing-the-ugly-parts/</a></li>
