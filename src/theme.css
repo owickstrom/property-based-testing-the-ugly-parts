@@ -52,7 +52,8 @@ body {
 .reveal h3,
 .reveal h4,
 .reveal h5,
-.reveal h6 {
+.reveal h6,
+.reveal .subtitle {
   margin: 0 0 20px 0;
   color: #000;
   font-family: "Oswald", "Ubuntu Condensed", Impact, sans-serif;
@@ -65,6 +66,10 @@ body {
 
 .reveal h1 {
   font-size: 2.5em;
+}
+.reveal .subtitle {
+  font-size: 1.5em;
+  margin-bottom: 2em;
 }
 
 .reveal .demo h1:before {

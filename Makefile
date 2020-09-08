@@ -5,8 +5,7 @@ TEX_OPTIONS=options.tex
 SRCS=$(shell find src -name '*.tex') \
      $(shell find src -name '*.bib') \
      $(shell find src -name '*.md') \
-     $(shell find src -name '*.css') \
-		 $(shell find src/examples -name '*.hs')
+     $(shell find src -name '*.css')
 
 PANDOC_FLAGS= -s \
 						  -f markdown+multiline_tables \
@@ -32,7 +31,7 @@ SLIDES_NO_NOTES_DIR=target/slides-no-notes
 SLIDES_NO_NOTES=$(SLIDES_NO_NOTES_DIR)/slides-no-notes.pdf
 
 .PHONY: all
-all: html-slides programs
+all: html-slides
 
 .PHONY: pdf-slides
 pdf-slides: $(SLIDES) $(SLIDES_NO_NOTES)
@@ -88,9 +87,6 @@ target/html/index.html: $(SRCS) src/header.html src/theme.css $(IMAGES)
 		-H src/header.html \
 		src/slides.md \
 		-o $@
-
-programs:
-	cd src/examples && cabal v2-run
 
 target/images/%: src/images/%
 	mkdir -p target/images
